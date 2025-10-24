@@ -1,0 +1,92 @@
+# Entornos virtuales de Python
+venv/
+.env/
+.venv/
+env/
+ENV/
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Archivos de base de datos
+*.sqlite3
+*.db
+db.sqlite3
+
+# Django
+media/
+staticfiles/
+*.log
+local_settings.py
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Sistema operativo
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Archivos de Docker (opcionales)
+docker-data/
+!.dockerignore
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Logs
+logs/
+*.log
+
+# Archivos de cobertura
+htmlcov/
+.coverage
+.coverage.*
+.coverage
+.pytest_cache/
+
+# Archivos de Jupyter Notebook
+.ipynb_checkpoints
+
+# Archivos de PyCharm
+.idea/
+
+# Archivos de VS Code
+.vscode/settings.json
+.vscode/launch.json
+
+# Archivos de entornos
+.python-version
+
+# Archivos de seguridad
+secrets.py
+config_secret.py
