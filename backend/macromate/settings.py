@@ -80,17 +80,20 @@ WSGI_APPLICATION = 'macromate.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'macromate_db',
-        'USER': 'macromate_user',
-        'PASSWORD': 'macromate_pass',
-        'HOST': 'localhost',
-        'PORT': '3307',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+# If you want to use MySQL, uncomment and configure the following:
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'macromate_db',
+#         'USER': 'your_mysql_user',
+#         'PASSWORD': 'your_mysql_password',
+#         'HOST': 'localhost',
+#         'PORT': '3306 o 7307 según tu configuración',
+#     }
 
 
 # Password validation

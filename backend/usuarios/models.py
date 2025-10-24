@@ -1,47 +1,58 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 # Create your models here.
 
-class Usuario(AbstractUser):
-    # Puedes agregar campos adicionales si es necesario
-    email = models.EmailField(unique=True)
-    fecha_registro = models.DateTimeField(auto_now_add=True)
+class UsuarioManager(BaseUserManager):
+    def create_user(self, email, nombre_usuario, password=None):
+        if not email:
+            raise ValueError('El usuario debe tener un email')
+        
+        user = self.model(
+            email=self.normalize_email(email),
+            nombre_usuario=nombre_usuario,
+        )
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, nombre_usuario, password=None):
+        user = self.create_user(
+            email=email,
+            nombre_usuario=nombre_usuario,
+            password=password,
+        )
+        user.is_admin = True
+        user.is_staff = True
+        user.save(using=self._db)
+        return user
+
+# LUEGO EL MODELO
+class Usuario(AbstractBaseUser):
+    id_usuario = models.AutoField(primary_key=True)
+    nombre_usuario = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    email = models.EmailField(max_length=100, unique=True)
+    fecha_creacion = models.DateTimeField(null=True, blank=True)
+    ultima_sesion = models.DateTimeField(null=True, blank=True)
     activo = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.email
     
-class PerfilUsuario(models.Model):
-    GENERO_OPCIONES = [
-      ('M', 'Masculino'),
-      ('F', 'Femenino'),
-  ]
-
-    NIVEL_ACTIVIDAD = [
-       ('S', 'Sedentario'),
-         ('L', 'Ligero'),
-         ('M', 'Moderado'),
-         ('A', 'Activo'),
-         ('E', 'Muy Activo'),
-    ]
-
-    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
-    edad = models.IntegerField()
-    peso = models.FloatField(help_text="Peso en kg")  # kg
-    altura = models.FloatField(help_text="Altura en cm")  # cm
-    genero = models.CharField(max_length=20, choices=GENERO_OPCIONES)
-    nivel_actividad = models.CharField(max_length=20, choices=NIVEL_ACTIVIDAD)
-    bmr = models.FloatField(null=True, blank=True, help_text="Tasa Metabólica Basal")
-    tdee = models.FloatField(null=True, blank=True, help_text="Gasto Energético Total Diario")
-    objetivo = models.CharField(max_length=50, default="mantener", 
-                               help_text="Objetivo: perder, mantener, ganar peso")
+    # Campos para permisos
+    is_active = models.BooleanField(default=True)
+    is_admin = models.BooleanField(default=False)
+    
+    objects = UsuarioManager()  # ← USA EL MANAGER AQUÍ
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['nombre_usuario']
     
     def __str__(self):
-        return f"Perfil de {self.usuario.email}"
+        return self.nombre_usuario
     
-    class Meta:
-        verbose_name = "Perfil de Usuario"
-        verbose_name_plural = "Perfiles de Usuario"
-
-
+    # Métodos de permisos
+    def has_perm(self, perm, obj=None):
+        return True
+    
+    def has_module_perms(self, app_label):
+        return True
+    
+    is_staff = models.BooleanField(default=False)  # ← SOLO esto, sin @property
