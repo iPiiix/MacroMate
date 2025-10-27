@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from .models import Usuario, Perfil
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 class UsuarioRegistroSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -50,3 +52,29 @@ class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
         fields = ('id_usuario', 'nombre_usuario', 'email', 'fecha_creacion', 'perfil')
+
+class CambiarContrasenaSerializer(serializers.Serializer):
+    contrasena_actual = serializers.CharField(write_only=True, required=True)
+    nueva_contrasena = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    confirmar_contrasena = serializers.CharField(write_only=True, required=True)
+
+    def validate(self, data):
+        # Verificar que las nuevas contraseñas coinciden
+        if data['nueva_contrasena'] != data['confirmar_contrasena']:
+            raise serializers.ValidationError({
+                "confirmar_contrasena": "Las nuevas contraseñas no coinciden"
+            })
+        
+        # Verificar que la nueva contraseña es diferente a la actual
+        if data['contrasena_actual'] == data['nueva_contrasena']:
+            raise serializers.ValidationError({
+                "nueva_contrasena": "La nueva contraseña debe ser diferente a la actual"
+            })
+        
+        return data
+
+    def validate_contrasena_actual(self, value):
+        usuario = self.context['request'].user
+        if not usuario.check_password(value):
+            raise serializers.ValidationError("La contraseña actual es incorrecta")
+        return value

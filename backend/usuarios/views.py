@@ -4,15 +4,17 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+
 from .models import Usuario, Perfil
 from .serializers import (
     UsuarioRegistroSerializer, 
     UsuarioLoginSerializer, 
     UsuarioSerializer,
-    PerfilSerializer
+    PerfilSerializer,
+    CambiarContrasenaSerializer
 )
-
-# create your views here.
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -76,6 +78,40 @@ def perfil_usuario(request):
             return Response(serializer.data)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def cambiar_contrasena(request):
+    """RF3 - Cambiar contraseña del usuario autenticado"""
+    serializer = CambiarContrasenaSerializer(
+        data=request.data, 
+        context={'request': request}
+    )
+    
+    if serializer.is_valid():
+        usuario = request.user
+        nueva_contrasena = serializer.validated_data['nueva_contrasena']
+        
+        try:
+            # Validar la nueva contraseña con los validadores de Django
+            validate_password(nueva_contrasena, usuario)
+            
+            # Cambiar la contraseña
+            usuario.set_password(nueva_contrasena)
+            usuario.save()
+            
+            return Response({
+                'message': 'Contraseña cambiada exitosamente',
+                'detail': 'Tu contraseña ha sido actualizada correctamente'
+            }, status=status.HTTP_200_OK)
+            
+        except ValidationError as e:
+            return Response({
+                'error': 'Error en validación de contraseña',
+                'details': list(e.messages)
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
