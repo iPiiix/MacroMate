@@ -1,6 +1,6 @@
 # MacroMate
 
-# 🍌 MacroMate - Smart Nutrition, Powered by AI
+# MacroMate - Smart Nutrition, Powered by AI
 
 <div align="center">
 
@@ -16,19 +16,19 @@
 
 </div>
 
-## 📋 Tabla de Contenidos
+## Tabla de Contenidos
 
 - [Características](#-características)
-- [Arquitectura](#️-arquitectura)
+- [Arquitectura](#-arquitectura)
 - [Instalación Rápida](#-instalación-rápida)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
 - [Desarrollo](#-desarrollo)
 - [Equipo](#-equipo)
 - [Contacto](#-contacto)
 
-## 🎯 Características
+## Características
 
-### ✨ Funcionalidades Principales
+### Funcionalidades Principales
 - **Dashboard Nutricional** - Seguimiento en tiempo real de calorías y macronutrientes
 - **Asistente IA** - Recomendaciones personalizadas con OpenAI GPT-4
 - **Progreso Visual** - Gráficos interactivos de evolución física y nutricional
@@ -36,13 +36,13 @@
 - **Base de Datos de Alimentos** - Catálogo extenso con información nutricional
 - **Diseño Responsive** - Experiencia optimizada para todos los dispositivos
 
-### 🎓 Para el Proyecto Académico
+### Para el Proyecto Académico
 - **Arquitectura Moderna** - Separación clara entre frontend y backend
 - **Autenticación JWT** - Sistema seguro de usuarios y permisos
 - **Contenerización** - Entorno reproducible con Docker
 - **Documentación Completa** - Cobertura técnica y de usuario
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 ### Stack Tecnológico
 
@@ -107,11 +107,11 @@ python manage.py runserver
 
 <div align="center">
 Desarrolladores Del Proyecto
-Nombre	Rol	Responsabilidades
+Santiago Pérez Guerrero
 Juan José Cardona Ospina	
 </div>
 
-📚 Información Académica
+Información Académica
 <div align="center">
 IES Infatna Elena
 Desarrollo de Aplicaciones Multiplataforma
