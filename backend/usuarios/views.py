@@ -82,7 +82,6 @@ def perfil_usuario(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def cambiar_contrasena(request):
-    """RF3 - Cambiar contraseña del usuario autenticado"""
     serializer = CambiarContrasenaSerializer(
         data=request.data, 
         context={'request': request}
@@ -120,6 +119,6 @@ def logout_usuario(request):
         refresh_token = request.data["refresh"]
         token = RefreshToken(refresh_token)
         token.blacklist()
-        return Response({"message": "Logout exitoso"}, status=status.HTTP_200_OK)
+        return Response({"message": "Sesión Cerrada"}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

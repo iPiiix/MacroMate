@@ -78,3 +78,8 @@ class CambiarContrasenaSerializer(serializers.Serializer):
         if not usuario.check_password(value):
             raise serializers.ValidationError("La contraseña actual es incorrecta")
         return value
+    
+    def validate_email(self, value):
+        if Usuario.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Este email está en uso")
+        return value

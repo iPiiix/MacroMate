@@ -1,16 +1,11 @@
--- =====================================================
--- BASE DE DATOS MACROMATE - VERSIÓN SIMPLIFICADA
--- Smart Nutrition, Powered by AI
+-- BASE DE DATOS MACROMATE - 
 -- Proyecto Académico 2025-2026
 -- Autores: Juan José Cardona Ospina, Santiago Pérez Guerrero
--- =====================================================
 
 CREATE DATABASE IF NOT EXISTS macromate CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE macromate;
 
--- =====================================================
 -- MÓDULO 1: USUARIOS Y AUTENTICACIÓN
--- =====================================================
 
 CREATE TABLE usuarios (
     id_usuario INT PRIMARY KEY AUTO_INCREMENT,
@@ -33,9 +28,8 @@ CREATE TABLE sesiones (
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
 ) COMMENT='Control de sesiones activas';
 
--- =====================================================
+
 -- MÓDULO 2: PERFILES
--- =====================================================
 
 CREATE TABLE perfiles (
     id_perfil INT PRIMARY KEY AUTO_INCREMENT,
@@ -75,9 +69,8 @@ CREATE TABLE historial_objetivos (
     FOREIGN KEY (id_perfil) REFERENCES perfiles(id_perfil) ON DELETE CASCADE
 ) COMMENT='Historial de cambios de objetivos';
 
--- =====================================================
+
 -- MÓDULO 3: MACRONUTRIENTES
--- =====================================================
 
 CREATE TABLE macronutrientes (
     id_macro INT PRIMARY KEY AUTO_INCREMENT,
@@ -92,9 +85,8 @@ CREATE TABLE macronutrientes (
     INDEX idx_perfil_activo (id_perfil, activo)
 ) COMMENT='Macronutrientes calculados';
 
--- =====================================================
+
 -- MÓDULO 4: ALIMENTOS Y RECETAS
--- =====================================================
 
 CREATE TABLE categorias_alimentos (
     id_categoria INT PRIMARY KEY AUTO_INCREMENT,
@@ -138,9 +130,8 @@ CREATE TABLE ingredientes_receta (
     FOREIGN KEY (id_alimento) REFERENCES alimentos(id_alimento)
 ) COMMENT='Ingredientes de cada receta';
 
--- =====================================================
+
 -- MÓDULO 5: REGISTRO DIARIO
--- =====================================================
 
 CREATE TABLE registro_diario (
     id_registro INT PRIMARY KEY AUTO_INCREMENT,
@@ -194,9 +185,8 @@ CREATE TABLE registro_ejercicios (
     FOREIGN KEY (id_ejercicio) REFERENCES ejercicios(id_ejercicio)
 ) COMMENT='Ejercicios realizados';
 
--- =====================================================
+
 -- MÓDULO 6: INTELIGENCIA ARTIFICIAL
--- =====================================================
 
 CREATE TABLE conversaciones_ia (
     id_conversacion INT PRIMARY KEY AUTO_INCREMENT,
@@ -225,9 +215,8 @@ CREATE TABLE recomendaciones_ia (
     FOREIGN KEY (id_perfil) REFERENCES perfiles(id_perfil) ON DELETE CASCADE
 ) COMMENT='Recomendaciones generadas por IA';
 
--- =====================================================
+
 -- MÓDULO 7: GAMIFICACIÓN
--- =====================================================
 
 CREATE TABLE logros (
     id_logro INT PRIMARY KEY AUTO_INCREMENT,
@@ -255,9 +244,8 @@ CREATE TABLE rachas (
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
 ) COMMENT='Sistema de rachas';
 
--- =====================================================
+
 -- VISTAS PRINCIPALES
--- =====================================================
 
 CREATE VIEW vista_usuario_completo AS
 SELECT 
@@ -313,9 +301,8 @@ JOIN macronutrientes m ON p.id_perfil = m.id_perfil AND m.activo = TRUE
 WHERE rd.fecha >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
 ORDER BY rd.id_perfil, rd.fecha DESC;
 
--- =====================================================
+
 -- DATOS INICIALES
--- =====================================================
 
 -- Categorías de alimentos
 INSERT INTO categorias_alimentos (nombre) VALUES
@@ -373,24 +360,4 @@ INSERT INTO logros (nombre, descripcion, puntos) VALUES
 ('Ganancia 5kg', 'Gana 5kg', 150),
 ('Maestro Macros', 'Cumple macros 7 días seguidos', 100);
 
--- =====================================================
--- RESUMEN
--- =====================================================
-/*
-BASE DE DATOS SIMPLIFICADA - MACROMATE
-
-TABLAS TOTALES: 20
-
-MÓDULOS:
-1. Autenticación (2 tablas)
-2. Perfiles (3 tablas)
-3. Macronutrientes (1 tabla)
-4. Alimentos y Recetas (4 tablas)
-5. Registro Diario (5 tablas)
-6. Inteligencia Artificial (3 tablas)
-7. Gamificación (3 tablas)
-
-PROCEDIMIENTOS: 0 (Lógica en Python)
-TRIGGERS: 0 (Lógica en Python)
-VISTAS: 3
-*/
+-- BASE DE DATOS - MACROMATE
