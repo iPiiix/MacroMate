@@ -17,6 +17,11 @@ class UsuarioRegistroSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Las contraseñas no coinciden")
         return data
     
+    def validate_email(self, value):
+        if Usuario.objects.filter(email=value).exists():
+            raise serializers.ValidationError("El email ya está en uso")
+        return value
+    
     def create(self, validated_data):
         validated_data.pop('password_confirm')
         usuario = Usuario.objects.create_user(**validated_data)
@@ -77,9 +82,4 @@ class CambiarContrasenaSerializer(serializers.Serializer):
         usuario = self.context['request'].user
         if not usuario.check_password(value):
             raise serializers.ValidationError("La contraseña actual es incorrecta")
-        return value
-    
-    def validate_email(self, value):
-        if Usuario.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Este email está en uso")
         return value

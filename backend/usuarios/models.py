@@ -54,7 +54,6 @@ class Perfil(models.Model):
     GENERO_CHOICES = [
         ('masculino', 'Masculino'),
         ('femenino', 'Femenino'),
-        ('otro', 'Otro'),
     ]
     
     NIVEL_ACTIVIDAD_CHOICES = [

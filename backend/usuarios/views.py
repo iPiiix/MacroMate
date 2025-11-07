@@ -1,3 +1,4 @@
+from httpx import request
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -116,9 +117,10 @@ def cambiar_contrasena(request):
 @permission_classes([IsAuthenticated])
 def logout_usuario(request):
     try:
-        refresh_token = request.data["refresh"]
-        token = RefreshToken(refresh_token)
-        token.blacklist()
-        return Response({"message": "Sesión Cerrada"}, status=status.HTTP_200_OK)
+        RefreshToken = request.data.get('refresh')
+        if RefreshToken:
+            token = RefreshToken(RefreshToken)
+            token.blacklist()
+        return Response({'message': 'Logout exitoso'}, status=status.HTTP_205_RESET_CONTENT)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Token inválido o expirado'}, status=status.HTTP_400_BAD_REQUEST)             

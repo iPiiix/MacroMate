@@ -3,17 +3,24 @@ from django.contrib.auth.admin import UserAdmin
 from .models import Usuario, Perfil, MedidaCorporal, HistorialObjetivo
 
 @admin.register(Usuario)
-class UsuarioAdmin(admin.ModelAdmin):  
-    list_display = ('id_usuario', 'nombre_usuario', 'email', 'fecha_creacion', 'is_active')
-    list_filter = ('is_active', 'fecha_creacion')
+class UsuarioAdmin(UserAdmin):  
+    list_display = ('id_usuario', 'nombre_usuario', 'email', 'fecha_creacion', 'is_active', 'is_staff')
+    list_filter = ('is_active', 'is_staff', 'fecha_creacion')
     search_fields = ('nombre_usuario', 'email')
     ordering = ('-fecha_creacion',)
     
     fieldsets = (
         (None, {'fields': ('nombre_usuario', 'email', 'password')}),
-        ('Información importante', {'fields': ('ultima_sesion', 'is_active')}),
+        ('Permisos', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Fechas importantes', {'fields': ('ultima_sesion', 'fecha_creacion')}),
     )
-
+    
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('nombre_usuario', 'email', 'password1', 'password2'),
+        }),
+    )
 @admin.register(Perfil)
 class PerfilAdmin(admin.ModelAdmin):
     list_display = ('id_usuario', 'nombre', 'apellidos', 'peso_actual', 'objetivo')

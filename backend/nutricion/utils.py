@@ -5,13 +5,18 @@ def calcular_bmr(perfil):
     """
     Calcula la Tasa Metabólica Basal (BMR) usando la ecuación de Mifflin-St Jeor
     """
+    # ✅ CONVERTIR Decimal a float para evitar errores
+    peso = float(perfil.peso_actual) if perfil.peso_actual else 0
+    altura = float(perfil.altura) if perfil.altura else 0
+    edad = calcular_edad(perfil)
+    
     if perfil.genero == 'masculino':
-        bmr = (10 * perfil.peso_actual) + (6.25 * perfil.altura) - (5 * calcular_edad(perfil)) + 5
+        bmr = (10 * peso) + (6.25 * altura) - (5 * edad) + 5
     elif perfil.genero == 'femenino':
-        bmr = (10 * perfil.peso_actual) + (6.25 * perfil.altura) - (5 * calcular_edad(perfil)) - 161
+        bmr = (10 * peso) + (6.25 * altura) - (5 * edad) - 161
     else:
         # Valor por defecto para 'otro'
-        bmr = (10 * perfil.peso_actual) + (6.25 * perfil.altura) - (5 * calcular_edad(perfil)) - 78
+        bmr = (10 * peso) + (6.25 * altura) - (5 * edad) - 78
     
     return float(bmr)
 
@@ -39,44 +44,45 @@ def calcular_tdee(bmr, nivel_actividad):
     }
     
     factor = factores_actividad.get(nivel_actividad, 1.2)
-    return bmr * factor
+    return float(bmr) * factor  # ✅ Asegurar que bmr es float
 
 def ajustar_calorias_objetivo(tdee, objetivo):
     """
     Ajusta las calorías según el objetivo del usuario
     """
+    tdee_float = float(tdee)  # ✅ Convertir a float primero
+    
     ajustes = {
-        'perdida_peso': tdee * 0.8,      # Déficit del 20%
-        'mantenimiento': tdee,           # Mantener peso
-        'ganancia_muscular': tdee * 1.1  # Superávit del 10%
+        'perdida_peso': tdee_float * 0.8,      # Déficit del 20%
+        'mantenimiento': tdee_float,           # Mantener peso
+        'ganancia_muscular': tdee_float * 1.1  # Superávit del 10%
     }
     
-    return ajustes.get(objetivo, tdee)
+    return ajustes.get(objetivo, tdee_float)
 
 def distribuir_macronutrientes(calorias_totales, objetivo):
     """
     Distribuye los macronutrientes según las calorías y objetivo
     """
+    calorias_float = float(calorias_totales)  # ✅ Convertir a float
+    
     if objetivo == 'perdida_peso':
-        # Mayor proteína, moderados carbohidratos, bajas grasas
         ratio_proteina = 0.35
         ratio_grasas = 0.25
         ratio_carbohidratos = 0.40
     elif objetivo == 'ganancia_muscular':
-        # Alta proteína, altos carbohidratos, moderadas grasas
         ratio_proteina = 0.30
         ratio_grasas = 0.25
         ratio_carbohidratos = 0.45
     else:  # mantenimiento
-        # Balance estándar
         ratio_proteina = 0.25
         ratio_grasas = 0.25
         ratio_carbohidratos = 0.50
     
     # Calcular gramos (1g proteína = 4 cal, 1g carbohidrato = 4 cal, 1g grasa = 9 cal)
-    proteinas_gramos = (calorias_totales * ratio_proteina) / 4
-    grasas_gramos = (calorias_totales * ratio_grasas) / 9
-    carbohidratos_gramos = (calorias_totales * ratio_carbohidratos) / 4
+    proteinas_gramos = (calorias_float * ratio_proteina) / 4
+    grasas_gramos = (calorias_float * ratio_grasas) / 9
+    carbohidratos_gramos = (calorias_float * ratio_carbohidratos) / 4
     
     return {
         'proteinas': round(proteinas_gramos, 1),
