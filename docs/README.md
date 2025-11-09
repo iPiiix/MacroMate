@@ -1,8 +1,7 @@
-# MacroMate
-
-# MacroMate - Smart Nutrition, Powered by AI
-
 <div align="center">
+
+# MacroMate - Smart Nutrition
+
 
 ![Django](https://img.shields.io/badge/Django-5.2.7-green?logo=django)
 ![React](https://img.shields.io/badge/React-18-blue?logo=react)
@@ -34,7 +33,6 @@
 - **Progreso Visual** - Gráficos interactivos de evolución física y nutricional
 - **Perfiles Personalizados** - Cálculo automático de BMR, TDEE y macros según objetivos
 - **Base de Datos de Alimentos** - Catálogo extenso con información nutricional
-- **Diseño Responsive** - Experiencia optimizada para todos los dispositivos
 
 ### Para el Proyecto Académico
 - **Arquitectura Moderna** - Separación clara entre frontend y backend
@@ -60,9 +58,9 @@
 ### Prerrequisitos
 - **Docker** y **Docker Compose**
 - **Python 3.11+**
-- **Node.js 18+** (para frontend, próximamente)
+- **Node.js 18+** 
 
-### 🐳 Instalación con Docker (Recomendada)
+### Instalación con Docker 
 
 ```bash
 # 1. Clonar el repositorio
@@ -75,7 +73,7 @@ docker-compose up -d
 # 3. Verificar que los servicios estén corriendo
 docker ps
 
-# INSATLACÓN MANUAL [DESARROLLO]
+# INSTALACIÓN MANUAL [DESARROLLO]
 
 # 1. Clonar repositorio
 git clone https://github.com/tuusuario/macromate.git
@@ -105,20 +103,17 @@ python manage.py runserver
 
 # 👥 Equipo
 
-<div align="center">
-Desarrolladores Del Proyecto
-Santiago Pérez Guerrero
-Juan José Cardona Ospina	
-</div>
+## Desarrolladores Del Proyecto
 
-Información Académica
-<div align="center">
-IES Infatna Elena
-Desarrollo de Aplicaciones Multiplataforma
+- Santiago Pérez Guerrero
+- Juan José Cardona Ospina
+
+## Información Académica
+
+IES Infanta Elena  
+Desarrollo de Aplicaciones Multiplataforma  
 Año Académico 2025-2026
 
 ##### Presentado ante el: Equipo Docente del Departamento de Informática
 
 >Proyecto desarrollado como parte de la formación académica en desarrollo software multiplataforma
-
-</div>
