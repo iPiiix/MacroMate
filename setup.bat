@@ -7,11 +7,7 @@ echo       MACROMATE - INSTALACION INICIAL
 echo.
 
 REM Verificar Python
-python --version >nul 2>&1 || 
-(echo [ERROR] Python no está instalado o no está en PATH.
-    pause
-    exit /b
-)
+python --version >nul 2>&1 || (echo [ERROR] Python no está instalado o no está en PATH. & pause & exit /b)
 
 REM 1. Crear entorno virtual
 echo [1/6] Creando entorno virtual...
@@ -40,13 +36,13 @@ REM 5. Crear superusuario automático
 echo [5/6] Creando superusuario (admin@macromate.com)...
 python manage.py shell -c "from django.contrib.auth import get_user_model; User=get_user_model(); \
 User.objects.filter(username='admin').exists() or (u:=User.objects.create_superuser('admin','admin@macromate.com','admin123'))"
-
-REM 6. Mostrar resumen
-echo.
-echo.
-echo INSTALACION COMPLETADA CORRECTAMENTE
-echo.
+REM 5. Crear superusuario automático
+echo [5/6] Creando superusuario (admin@macromate.com)...
+python manage.py shell -c "from django.contrib.auth import get_user_model; User=get_user_model(); if not User.objects.filter(username='admin').exists(): User.objects.create_superuser('admin','admin@macromate.com','admin123')"
+echo   INSTALACION COMPLETADA CORRECTAMENTE
+echo ========================================
 echo Usuario: admin
 echo Contraseña: admin123
+
 cd ..
 pause

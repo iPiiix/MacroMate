@@ -5,7 +5,6 @@ def calcular_bmr(perfil):
     """
     Calcula la Tasa Metabólica Basal (BMR) usando la ecuación de Mifflin-St Jeor
     """
-    # ✅ CONVERTIR Decimal a float para evitar errores
     peso = float(perfil.peso_actual) if perfil.peso_actual else 0
     altura = float(perfil.altura) if perfil.altura else 0
     edad = calcular_edad(perfil)
@@ -44,18 +43,18 @@ def calcular_tdee(bmr, nivel_actividad):
     }
     
     factor = factores_actividad.get(nivel_actividad, 1.2)
-    return float(bmr) * factor  # ✅ Asegurar que bmr es float
+    return float(bmr) * factor  
 
 def ajustar_calorias_objetivo(tdee, objetivo):
     """
     Ajusta las calorías según el objetivo del usuario
     """
-    tdee_float = float(tdee)  # ✅ Convertir a float primero
+    tdee_float = float(tdee)  
     
     ajustes = {
         'perdida_peso': tdee_float * 0.8,      # Déficit del 20%
         'mantenimiento': tdee_float,           # Mantener peso
-        'ganancia_muscular': tdee_float * 1.1  # Superávit del 10%
+        'ganancia_muscular': tdee_float * 1.1,  # Superávit del 10%
     }
     
     return ajustes.get(objetivo, tdee_float)
@@ -64,7 +63,7 @@ def distribuir_macronutrientes(calorias_totales, objetivo):
     """
     Distribuye los macronutrientes según las calorías y objetivo
     """
-    calorias_float = float(calorias_totales)  # ✅ Convertir a float
+    calorias_float = float(calorias_totales)  
     
     if objetivo == 'perdida_peso':
         ratio_proteina = 0.35
@@ -91,9 +90,6 @@ def distribuir_macronutrientes(calorias_totales, objetivo):
     }
 
 def calcular_macros_para_perfil(perfil):
-    """
-    Función principal que calcula todos los valores nutricionales para un perfil
-    """
     # Validar datos mínimos requeridos
     if not perfil.peso_actual or not perfil.altura:
         return {
@@ -106,7 +102,7 @@ def calcular_macros_para_perfil(perfil):
             'tdee': 0
         }
     
-    # Cálculos paso a paso
+    # Calcular BMR, TDEE, calorías objetivo y distribución de macronutrientes
     bmr = calcular_bmr(perfil)
     tdee = calcular_tdee(bmr, perfil.nivel_actividad)
     calorias_objetivo = ajustar_calorias_objetivo(tdee, perfil.objetivo)

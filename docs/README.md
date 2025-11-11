@@ -65,7 +65,7 @@
 ```bash
 # 1. Clonar el repositorio
 git clone https://github.com/tuusuario/macromate.git
-cd macromate
+cd MacroMate
 
 # 2. Iniciar servicios con Docker
 docker-compose up -d
@@ -77,7 +77,7 @@ docker ps
 
 # 1. Clonar repositorio
 git clone https://github.com/tuusuario/macromate.git
-cd macromate
+cd MacroMate
 
 # 2. Configurar entorno virtual Python
 python -m venv venv

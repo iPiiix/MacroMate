@@ -1,7 +1,7 @@
-version: '3.8'
+version: "3.9"
 
 services:
-  # Base de datos MySQL
+  # --- Base de datos MySQL ---
   mysql:
     image: mysql:8.0
     container_name: macromate_mysql
@@ -11,7 +11,6 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-macromate_db}
       MYSQL_USER: ${MYSQL_USER:-macromate_user}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-macromate_pass}
-      MYSQL_ROOT_HOST: '%'
       TZ: Europe/Madrid
     ports:
       - "3307:3306"
@@ -23,18 +22,18 @@ services:
       --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
-      --max_connections=1000
+      --max_connections=500
       --max_allowed_packet=256M
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 25s
     networks:
       - macromate_network
 
-  # PHPMyAdmin para gestión visual de la BD
+  # --- phpMyAdmin ---
   phpmyadmin:
     image: phpmyadmin:latest
     container_name: macromate_phpmyadmin
@@ -42,11 +41,9 @@ services:
     environment:
       PMA_HOST: mysql
       PMA_PORT: 3306
-      PMA_USER: root
-      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      PMA_USER: ${MYSQL_USER:-macromate_user}
+      PMA_PASSWORD: ${MYSQL_PASSWORD:-macromate_pass}
       UPLOAD_LIMIT: 256M
-      MEMORY_LIMIT: 512M
-      MAX_EXECUTION_TIME: 300
     ports:
       - "8081:80"
     depends_on:
@@ -55,7 +52,7 @@ services:
     networks:
       - macromate_network
 
-  # Backend Django - MacroMate
+  # --- Backend Django ---
   backend:
     build:
       context: ./backend
@@ -64,13 +61,14 @@ services:
     restart: unless-stopped
     command: >
       sh -c "python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
+             python manage.py collectstatic --noinput &&
+             gunicorn macromate.wsgi:application --bind 0.0.0.0:8000"
     environment:
-      - DEBUG=${DEBUG:-1}
-      - SECRET_KEY=${SECRET_KEY:-macromate-dev-secret-key}
-      - DATABASE_URL=mysql://${MYSQL_USER:-macromate_user}:${MYSQL_PASSWORD:-macromate_pass}@mysql:3306/${MYSQL_DATABASE:-macromate_db}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,0.0.0.0
+      DEBUG: ${DEBUG:-1}
+      SECRET_KEY: ${SECRET_KEY:-macromate-dev-secret-key}
+      DATABASE_URL: mysql://${MYSQL_USER:-macromate_user}:${MYSQL_PASSWORD:-macromate_pass}@mysql:3306/${MYSQL_DATABASE:-macromate_db}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ALLOWED_HOSTS: localhost,127.0.0.1,backend,0.0.0.0
     volumes:
       - ./backend:/app
       - ./backend/static:/app/static
@@ -81,25 +79,26 @@ services:
       mysql:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/usuarios/registro/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
       interval: 30s
       timeout: 10s
       retries: 3
     networks:
       - macromate_network
 
-  # Frontend HTML/JS (Tailwind) - Servidor estático
+  # --- Frontend React / Nginx ---
   frontend:
     image: nginx:alpine
     container_name: macromate_frontend
     restart: unless-stopped
     volumes:
-      - ./frontend:/usr/share/nginx/html
+      - ./frontend/dist:/usr/share/nginx/html  # ajustado para build de React/Vite
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
       - "3000:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_started
     networks:
       - macromate_network
 
