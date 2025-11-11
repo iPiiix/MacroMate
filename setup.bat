@@ -1,39 +1,52 @@
 @echo off
-echo ========================================
-echo    MACROMATE - Instalacion Inicial
-echo ========================================
+title MacroMate - Instalación Inicial
+color 0A
 
-REM Crear entorno virtual
-echo [1/5] Creando entorno virtual...
-python -m venv venv
 
-REM Activar entorno virtual
-echo [2/5] Activando entorno virtual...
-venv\Scripts\activate
+echo       MACROMATE - INSTALACION INICIAL
+echo.
 
-REM Instalar dependencias
-echo [3/5] Instalando dependencias...
-pip install --upgrade pip
+REM Verificar Python
+python --version >nul 2>&1 || 
+(echo [ERROR] Python no está instalado o no está en PATH.
+    pause
+    exit /b
+)
+
+REM 1. Crear entorno virtual
+echo [1/6] Creando entorno virtual...
+if exist venv (
+    echo El entorno virtual ya existe.
+) else (
+    python -m venv venv 
+)
+
+REM 2. Activar entorno virtual
+echo [2/6] Activando entorno virtual...
+call venv\Scripts\activate
+
+REM 3. Instalar dependencias
+echo [3/6] Instalando dependencias...
+python -m pip install --upgrade pip
 pip install -r backend\requirements.txt
 
-REM Aplicar migraciones
-echo [4/5] Configurando base de datos...
+REM 4. Aplicar migraciones
+echo [4/6] Configurando base de datos...
 cd backend
 python manage.py makemigrations
 python manage.py migrate
 
-REM Crear superusuario
-echo [5/5] Creando superusuario...
-python manage.py createsuperuser --username=admin --email=admin@macromate.com --noinput
-echo Contrasena temporal: admin123
-python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); u = User.objects.get(username='admin'); u.set_password('admin123'); u.save()"
+REM 5. Crear superusuario automático
+echo [5/6] Creando superusuario (admin@macromate.com)...
+python manage.py shell -c "from django.contrib.auth import get_user_model; User=get_user_model(); \
+User.objects.filter(username='admin').exists() or (u:=User.objects.create_superuser('admin','admin@macromate.com','admin123'))"
 
-echo ========================================
-echo    INSTALACION COMPLETADA!
-echo ========================================
-echo Comandos utiles:
-echo   start.bat    - Iniciar desarrollo
-echo   setup.bat    - Reinstalar
-echo ========================================
+REM 6. Mostrar resumen
+echo.
+echo.
+echo INSTALACION COMPLETADA CORRECTAMENTE
+echo.
+echo Usuario: admin
+echo Contraseña: admin123
 cd ..
 pause
