@@ -6,7 +6,6 @@ CREATE DATABASE IF NOT EXISTS macromate CHARACTER SET utf8mb4 COLLATE utf8mb4_un
 USE macromate;
 
 -- MÓDULO 1: USUARIOS Y AUTENTICACIÓN
-
 CREATE TABLE usuarios (
     id_usuario INT PRIMARY KEY AUTO_INCREMENT,
     nombre_usuario VARCHAR(50) UNIQUE NOT NULL,
@@ -30,7 +29,6 @@ CREATE TABLE sesiones (
 
 
 -- MÓDULO 2: PERFILES
-
 CREATE TABLE perfiles (
     id_perfil INT PRIMARY KEY AUTO_INCREMENT,
     id_usuario INT UNIQUE NOT NULL,
@@ -71,7 +69,6 @@ CREATE TABLE historial_objetivos (
 
 
 -- MÓDULO 3: MACRONUTRIENTES
-
 CREATE TABLE macronutrientes (
     id_macro INT PRIMARY KEY AUTO_INCREMENT,
     id_perfil INT NOT NULL,
@@ -87,7 +84,6 @@ CREATE TABLE macronutrientes (
 
 
 -- MÓDULO 4: ALIMENTOS Y RECETAS
-
 CREATE TABLE categorias_alimentos (
     id_categoria INT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(100) NOT NULL
@@ -132,7 +128,6 @@ CREATE TABLE ingredientes_receta (
 
 
 -- MÓDULO 5: REGISTRO DIARIO
-
 CREATE TABLE registro_diario (
     id_registro INT PRIMARY KEY AUTO_INCREMENT,
     id_perfil INT NOT NULL,
@@ -187,7 +182,6 @@ CREATE TABLE registro_ejercicios (
 
 
 -- MÓDULO 6: INTELIGENCIA ARTIFICIAL
-
 CREATE TABLE conversaciones_ia (
     id_conversacion INT PRIMARY KEY AUTO_INCREMENT,
     id_usuario INT NOT NULL,
@@ -217,7 +211,6 @@ CREATE TABLE recomendaciones_ia (
 
 
 -- MÓDULO 7: GAMIFICACIÓN
-
 CREATE TABLE logros (
     id_logro INT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(100) NOT NULL,
@@ -246,7 +239,6 @@ CREATE TABLE rachas (
 
 
 -- VISTAS PRINCIPALES
-
 CREATE VIEW vista_usuario_completo AS
 SELECT 
     u.id_usuario,
@@ -302,8 +294,6 @@ WHERE rd.fecha >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
 ORDER BY rd.id_perfil, rd.fecha DESC;
 
 
--- DATOS INICIALES
-
 -- Categorías de alimentos
 INSERT INTO categorias_alimentos (nombre) VALUES
 ('Frutas'),
@@ -317,17 +307,29 @@ INSERT INTO categorias_alimentos (nombre) VALUES
 
 -- Alimentos básicos
 INSERT INTO alimentos (id_categoria, nombre, calorias, proteinas, carbohidratos, grasas, porcion_gramos) VALUES
-(1, 'Manzana', 52, 0.3, 14, 0.2, 100),
+(1, 'Manzana', 52, 0.3, 14, 0.2, 100), 
 (1, 'Plátano', 89, 1.1, 23, 0.3, 100),
 (1, 'Naranja', 47, 0.9, 12, 0.1, 100),
+(1, 'Fresas', 32, 0.7, 8, 0.3, 100),
+(1, 'Uvas', 69, 0.7, 18, 0.2, 100),
+(1, 'Piña', 50, 0.5, 13, 0.1, 100),
+(1, 'Mango', 60, 0.8, 15, 0.4, 100),
+(2, 'Lechuga', 15, 1.4, 2.9, 0.2, 100),
+(2, 'Zanahoria', 41, 0.9, 10, 0.2, 100),
 (2, 'Brócoli', 34, 2.8, 7, 0.4, 100),
 (2, 'Espinacas', 23, 2.9, 3.6, 0.4, 100),
 (2, 'Tomate', 18, 0.9, 3.9, 0.2, 100),
 (3, 'Pechuga de Pollo', 165, 31, 0, 3.6, 100),
+(3, 'Ternera', 250, 26, 0, 15, 100),
+(3, 'Pavo', 135, 30, 0, 1, 100),
 (3, 'Huevo', 155, 13, 1.1, 11, 100),
 (3, 'Salmón', 208, 20, 0, 13, 100),
 (3, 'Atún', 116, 26, 0, 0.8, 100),
 (4, 'Leche Desnatada', 34, 3.4, 5, 0.1, 100),
+(4, 'Leche Entera', 61, 3.2, 5, 3.3, 100),
+(4, 'Leche Semidesnatada', 45, 3.4, 5, 1.6, 100),
+(4, 'Queso Cheddar', 403, 25, 1.3, 33, 100),
+(4, 'Kefir', 41, 3.3, 4, 1, 100),
 (4, 'Yogur Natural', 61, 3.5, 4.7, 3.3, 100),
 (4, 'Queso Fresco', 174, 11, 3.4, 13, 100),
 (5, 'Arroz Cocido', 130, 2.7, 28, 0.3, 100),
@@ -339,7 +341,10 @@ INSERT INTO alimentos (id_categoria, nombre, calorias, proteinas, carbohidratos,
 (7, 'Almendras', 579, 21, 22, 50, 100),
 (7, 'Nueces', 654, 15, 14, 65, 100),
 (8, 'Aceite de Oliva', 884, 0, 0, 100, 100),
-(8, 'Aguacate', 160, 2, 9, 15, 100);
+(8, 'Aguacate', 160, 2, 9, 15, 100),
+(8, 'Mantequilla de Maní', 588, 25, 20, 50, 100),
+(8, 'Mantequilla', 717, 0.9, 0.1, 81, 100),
+(8, 'Aceite de Coco', 862, 0, 0, 100, 100);
 
 -- Ejercicios comunes
 INSERT INTO ejercicios (nombre, categoria, calorias_por_hora) VALUES
@@ -354,10 +359,10 @@ INSERT INTO ejercicios (nombre, categoria, calorias_por_hora) VALUES
 -- Logros
 INSERT INTO logros (nombre, descripcion, puntos) VALUES
 ('Primer Día', 'Registra tu primer día', 10),
+('Consistencia de 3 Días', 'Cumple tus macros 3 días seguidos', 30),
 ('Una Semana', 'Mantén 7 días consecutivos', 50),
 ('Un Mes', 'Mantén 30 días consecutivos', 200),
 ('Pérdida 5kg', 'Pierde 5kg de peso', 150),
 ('Ganancia 5kg', 'Gana 5kg', 150),
-('Maestro Macros', 'Cumple macros 7 días seguidos', 100);
+('Maestro MacroMate', 'Consigue una racha de un año', 100);
 
--- BASE DE DATOS - MACROMATE
