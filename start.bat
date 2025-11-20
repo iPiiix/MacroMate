@@ -1,6 +1,5 @@
 @echo off
 title MacroMate - Desarrollo Automático
-color 0B
 
 echo      MACROMATE - DESARROLLO AUTOMATICO
 echo.
