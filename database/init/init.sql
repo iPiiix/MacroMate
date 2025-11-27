@@ -145,8 +145,8 @@ CREATE TABLE registro_diario (
 CREATE TABLE comidas_diarias (
     id_comida INT PRIMARY KEY AUTO_INCREMENT,
     id_registro INT NOT NULL,
-    tipo_comida ENUM('desayuno', 'almuerzo', 'cena', 'snack') NOT NULL,
-    nombre VARCHAR(200),
+    tipo_comida ENUM('desayuno', 'almuerzo', 'comida', 'merienda', 'cena', 'snack') NOT NULL,
+    nombre VARCHAR(100),
     calorias DECIMAL(7,2),
     proteinas DECIMAL(6,2),
     carbohidratos DECIMAL(6,2),
@@ -166,7 +166,7 @@ CREATE TABLE alimentos_consumidos (
 CREATE TABLE ejercicios (
     id_ejercicio INT PRIMARY KEY AUTO_INCREMENT,
     nombre VARCHAR(200) NOT NULL,
-    categoria ENUM('cardio', 'fuerza', 'flexibilidad', 'otro'),
+    categoria ENUM('cardio', 'fuerza', 'flexibilidad', 'resistencia', 'otro'),
     calorias_por_hora DECIMAL(6,2)
 ) COMMENT='Catálogo de ejercicios';
 

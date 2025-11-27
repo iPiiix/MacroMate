@@ -31,6 +31,8 @@ class Receta(models.Model):
     TIPO_COMIDA_CHOICES = [
         ('desayuno', 'Desayuno'),
         ('almuerzo', 'Almuerzo'),
+        ('comida', 'Comida'),
+        ('merienda', 'Merienda'),
         ('cena', 'Cena'),
         ('snack', 'Snack'),
     ]

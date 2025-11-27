@@ -63,6 +63,7 @@ class Ejercicio(models.Model):
         ('cardio', 'Cardio'),
         ('fuerza', 'Fuerza'),
         ('flexibilidad', 'Flexibilidad'),
+        ('resistencia', 'Resistencia'),
         ('otro', 'Otro'),
     ]
     
