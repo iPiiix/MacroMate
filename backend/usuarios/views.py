@@ -117,10 +117,10 @@ def cambiar_contrasena(request):
 @permission_classes([IsAuthenticated])
 def logout_usuario(request):
     try:
-        RefreshToken = request.data.get('refresh')
-        if RefreshToken:
-            token = RefreshToken(RefreshToken)
+        RefreshToken_token_value = request.data.get('refresh')
+        if RefreshToken_token_value:
+            token = RefreshToken(RefreshToken_token_value)
             token.blacklist()
-        return Response({'message': 'Logout exitoso'}, status=status.HTTP_205_RESET_CONTENT)
+        return Response({'message': 'Sesión cerrada exitosamente'}, status=status.HTTP_205_RESET_CONTENT)
     except Exception as e:
         return Response({'error': 'Token inválido o expirado'}, status=status.HTTP_400_BAD_REQUEST)             

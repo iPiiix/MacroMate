@@ -10,7 +10,7 @@ CREATE TABLE usuarios (
     id_usuario INT PRIMARY KEY AUTO_INCREMENT,
     nombre_usuario VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    contrasena_hash VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ultima_sesion TIMESTAMP NULL,
     activo BOOLEAN DEFAULT TRUE,
@@ -131,6 +131,7 @@ CREATE TABLE ingredientes_receta (
 CREATE TABLE registro_diario (
     id_registro INT PRIMARY KEY AUTO_INCREMENT,
     id_perfil INT NOT NULL,
+    id_macro_objetivo INT NULL,
     fecha DATE DEFAULT (CURRENT_DATE),
     calorias_consumidas DECIMAL(7,2) DEFAULT 0,
     proteinas_consumidas DECIMAL(6,2) DEFAULT 0,
@@ -138,6 +139,7 @@ CREATE TABLE registro_diario (
     grasas_consumidas DECIMAL(6,2) DEFAULT 0,
     agua_litros DECIMAL(4,2) DEFAULT 0,
     FOREIGN KEY (id_perfil) REFERENCES perfiles(id_perfil) ON DELETE CASCADE,
+    FOREIGN KEY (id_macro_objetivo) REFERENCES macronutrientes(id_macro) ON DELETE SET NULL,
     UNIQUE KEY unique_registro (id_perfil, fecha),
     INDEX idx_perfil_fecha (id_perfil, fecha)
 ) COMMENT='Registro diario de nutrición';

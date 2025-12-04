@@ -78,7 +78,7 @@ DATABASES = {
     }
 }
 
-# Configuración MySQL para producción (descomenta cuando necesites)
+# Configuración MySQL para producción 
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',

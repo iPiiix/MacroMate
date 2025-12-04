@@ -1,5 +1,6 @@
 from decimal import Decimal
 from .models import Perfil
+from datetime import date
 
 def calcular_bmr(perfil):
     """
@@ -21,14 +22,13 @@ def calcular_bmr(perfil):
 
 def calcular_edad(perfil):
     """Calcula la edad a partir de la fecha de nacimiento"""
-    from datetime import date
     if perfil.fecha_nacimiento:
         today = date.today()
         age = today.year - perfil.fecha_nacimiento.year
         if today.month < perfil.fecha_nacimiento.month or (today.month == perfil.fecha_nacimiento.month and today.day < perfil.fecha_nacimiento.day):
             age -= 1
         return age
-    return 30  # Edad por defecto si no está especificada
+    return 0 
 
 def calcular_tdee(bmr, nivel_actividad):
     """
@@ -91,9 +91,9 @@ def distribuir_macronutrientes(calorias_totales, objetivo):
 
 def calcular_macros_para_perfil(perfil):
     # Validar datos mínimos requeridos
-    if not perfil.peso_actual or not perfil.altura:
+    if not perfil.peso_actual or not perfil.altura or not perfil.fecha_nacimiento:
         return {
-            'error': 'Se requiere peso y altura para calcular macros',
+            'error': 'Se requiere peso, altura y fecha de nacimiento para poder calcular los macronutrientes. :)',
             'calorias_diarias': 0,
             'proteinas': 0,
             'carbohidratos': 0,

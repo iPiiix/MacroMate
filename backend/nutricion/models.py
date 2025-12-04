@@ -26,7 +26,7 @@ class RegistroDiario(models.Model):
     carbohidratos_consumidos = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     grasas_consumidas = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     agua_litros = models.DecimalField(max_digits=4, decimal_places=2, default=0)
-    
+    id_macro_objetivo = models.ForeignKey('Macronutrientes', on_delete=models.PROTECT, null=True, blank=True)
     class Meta:
         db_table = 'registro_diario'
         unique_together = ['id_perfil', 'fecha']
