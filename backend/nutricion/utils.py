@@ -21,7 +21,6 @@ def calcular_bmr(perfil):
     return float(bmr)
 
 def calcular_edad(perfil):
-    """Calcula la edad a partir de la fecha de nacimiento"""
     if perfil.fecha_nacimiento:
         today = date.today()
         age = today.year - perfil.fecha_nacimiento.year
