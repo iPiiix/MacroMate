@@ -31,13 +31,11 @@ python manage.py makemigrations
 python manage.py migrate
 
 REM 5. Crear superusuario automático
-echo [5/6] Creando superusuario (admin@macromate.com)...
-python manage.py shell -c "from django.contrib.auth import get_user_model; User=get_user_model(); \
-User.objects.filter(username='admin').exists() or (u:=User.objects.create_superuser('admin','admin@macromate.com','admin123'))"
 REM 5. Crear superusuario automático
 echo [5/6] Creando superusuario (admin@macromate.com)...
-python manage.py shell -c "from django.contrib.auth import get_user_model; User=get_user_model(); if not User.objects.filter(username='admin').exists(): User.objects.create_superuser('admin','admin@macromate.com','admin123')"
-echo   INSTALACION COMPLETADA CORRECTAMENTE
+
+:: Corregimos la sintaxis para que funcione en Windows
+python manage.py shell -c "from django.contrib.auth import get_user_model; User=get_user_model(); User.objects.filter(email='admin@macromate.com').exists() or User.objects.create_superuser('admin','admin@macromate.com','admin123')"
 echo ========================================
 
 cd ..

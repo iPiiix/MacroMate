@@ -4,7 +4,6 @@ from usuarios.views import (
     registro_usuario, login_usuario, perfil_usuario, 
     logout_usuario, cambiar_contrasena
 )
-from ia_chat.views import ChatIAView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -15,6 +14,4 @@ urlpatterns = [
     path('api/usuarios/logout/', logout_usuario, name='logout'),
     
     path('api/nutricion/', include('nutricion.urls')),
-
-    path('api/chat_ia/', ChatIAView.as_view(), name='chat_ia'),
 ]
