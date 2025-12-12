@@ -1,121 +1,173 @@
-<div align="center">
+# MacroMate MVP – Smart Nutrition
 
-# MacroMate - Smart Nutrition
+**Django · React · SQLite/MySQL · Python**
+
+![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white) ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) ![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white) ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 
 
-![Django](https://img.shields.io/badge/Django-5.2.7-green?logo=django)
-![React](https://img.shields.io/badge/React-18-blue?logo=react)
-![MySQL](https://img.shields.io/badge/MySQL-8.0-orange?logo=mysql)
-![Docker](https://img.shields.io/badge/Docker-Enabled-blue?logo=docker)
-![Python](https://img.shields.io/badge/Python-3.11-yellow?logo=python)
+Sistema mínimo viable (MVP) para seguimiento nutricional y cálculo de macronutrientes.
 
-**Sistema inteligente de seguimiento nutricional con recomendaciones de IA**
+Proyecto Académico – Desarrollo de Aplicaciones Multiplataforma
+Curso 2025–2026
 
-*Proyecto Académico 2025-2026 - Desarrollo de Aplicaciones Multiplataforma*
+---
 
-</div>
+## Enfoque del MVP
 
-## Tabla de Contenidos
+MacroMate evoluciona a una versión **MVP** con un objetivo claro: **menos funcionalidades, mayor estabilidad y calidad técnica**.
 
-- [Características](#-características)
-- [Arquitectura](#-arquitectura)
-- [Instalación Rápida](#-instalación-rápida)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Desarrollo](#-desarrollo)
-- [Equipo](#-equipo)
-- [Contacto](#-contacto)
+Se prioriza:
 
-## Características
+* Correcto funcionamiento 
+* Código mantenible y comprensible
+* Funcionalidades nucleares bien implementadas
 
-### Funcionalidades Principales
-- **Dashboard Nutricional** - Seguimiento en tiempo real de calorías y macronutrientes
-- **Asistente IA** - Recomendaciones personalizadas con OpenAI GPT-4
-- **Progreso Visual** - Gráficos interactivos de evolución física y nutricional
-- **Perfiles Personalizados** - Cálculo automático de BMR, TDEE y macros según objetivos
-- **Base de Datos de Alimentos** - Catálogo extenso con información nutricional
+Todo lo no crítico (gamificación avanzada, recetas complejas, IA conversacional persistente, etc.) queda fuera de esta iteración.
 
-### Para el Proyecto Académico
-- **Arquitectura Moderna** - Separación clara entre frontend y backend
-- **Autenticación JWT** - Sistema seguro de usuarios y permisos
-- **Contenerización** - Entorno reproducible con Docker
-- **Documentación Completa** - Cobertura técnica y de usuario
+---
+
+## Funcionalidades Incluidas
+
+### Features Introducidas
+
+* **Autenticación de usuarios**
+
+  * Registro, login y logout
+  * Gestión básica de perfil
+
+* **Perfil nutricional**
+
+  * Datos físicos del usuario
+  * Selección de objetivo (pérdida, mantenimiento, ganancia)
+
+* **Cálculo automático**
+
+  * BMR (Tasa Metabólica Basal)
+  * TDEE (Gasto Energético Total Diario)
+  * Calorías y macronutrientes diarios
+
+* **Dashboard básico**
+
+  * Visualización de calorías y macros
+  * Estado diario de consumo (resumen)
+
+### Lo que ya no se va a incluir en el MVP
+
+* Chatbot IA persistente
+* Sistema de gamificación
+* Registro detallado de recetas
+* Seguimiento avanzado de ejercicios
+* Recomendaciones automáticas 
+
+Estas funcionalidades quedan documentadas pero sin implementar
+
+---
 
 ## Arquitectura
 
+Arquitectura **frontend / backend desacoplada**, orientada a simplicidad y claridad.
+
 ### Stack Tecnológico
 
-| Capa | Tecnología | Versión |
-|------|------------|---------|
-| **Frontend** | React + Vite + Tailwind CSS | 18.x |
-| **Backend** | Django + Django REST Framework | 5.2.7 |
-| **Base de Datos** | MySQL 8.0 | 8.0 |
-| **Autenticación** | JWT Tokens 
-| **Contenerización** | Docker + Docker Compose 
-| **IA** | OpenAI API (GPT-4) 
+| Capa                 | Tecnología                             |
+| -------------------- | -------------------------------------- |
+| Frontend             | React + Vite + Tailwind CSS            |
+| Backend              | Django + Django REST Framework         |
+| Base de Datos        | SQLite (desarrollo)                    |
+| Autenticación        | JWT (SimpleJWT)                        |
+| Control de versiones | Git + GitHub                           |
 
-## Instalación Rápida
+---
+
+## Estructura del Proyecto
+
+```
+MacroMate/
+├── backend/
+│   ├── users/
+│   ├── profiles/
+│   ├── nutrition/
+│   ├── config/
+│   └── manage.py
+├── docs/
+│   └── README.md
+│ 
+├── frontend/
+
+>Frontend no esta realizado todavia
+
+```
+
+---
+
+## Instalación Rápida (Desarrollo)
 
 ### Prerrequisitos
-- **Docker** y **Docker Compose**
-- **Python 3.11+**
-- **Node.js 18+** 
 
-### Instalación con Docker 
+* Python 3.11+
+* Node.js 18+
+* Git
+
+### Backend
 
 ```bash
-# 1. Clonar repositorio
-git clone https://github.com/tuusuario/macromate.git
-cd MacroMate
+# Clonar repositorio
+cd MacroMate/backend
 
-# 2. Configurar  y crear entorno virtual Python
+# Crear entorno virtual
 python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# Windows
-.\venv\Scripts\activate
-
-# 3. Instalar dependencias
+# Instalar dependencias
 pip install -r requirements.txt
 
-# 4. Configurar base de datos MySQL
-cd backend
+# Migraciones
 python manage.py migrate
 
-# 5. Crear superusuario
+# Crear superusuario
 python manage.py createsuperuser
 
-# 6. Iniciar servidor de desarrollo
+# Ejecutar servidor
 python manage.py runserver
 ```
 
-## Desarrolladores Del Proyecto
 
-- Santiago Pérez Guerrero
-- Juan José Cardona Ospina
+---
 
-## Información Académica
+## Objetivo Académico
 
-IES Infanta Elena  
-Desarrollo de Aplicaciones Multiplataforma  
-Año Académico 2025-2026
+Este MVP está diseñado para:
 
-#### Contacto
-<div align="center">
+* Demostrar dominio del stack full‑stack
+* Aplicar arquitectura limpia y modular
+* Cumplir requisitos funcionales clave sin sobreingeniería
 
-MacroMate - Smart Nutrition
-Sistema inteligente de seguimiento nutricional con recomendaciones de IA
+Se ha priorizado la calidad tecnologica y estabilidad sobre la cantidad de funcionalidades
 
-</div> 
+---
 
-- Email: 1913555@alu.murciaeduca.es
-- Institución: IES Infanta Elena
-- Ciclo: Desarrollo de Aplicaciones Multiplataforma
 
-<div align="center">
+## Equipo
 
-📁 Repositorio: [MacroMate](https://github.com/iPiiix/MacroMate)
+* **Santiago Pérez Guerrero**
+* **Juan José Cardona Ospina**
 
-> © 2025/2026 MacroMate - Smart Nutrition
-Desarrollado por: Santiago Pérez Guerrero • Juan José Cardona Ospina
-Proyecto Académico - IES Infanta Elena • DAM 2025-2026
-Proyecto desarrollado como parte de la formación académica en desarrollo software multiplataforma
-</div> 
+IES Infanta Elena
+Desarrollo de Aplicaciones Multiplataforma
+Curso 2025–2026
+
+---
+
+## Contacto
+
+Email: [1913555@alu.murciaeduca.es](mailto:1913555@alu.murciaeduca.es)
+Email: [13763596@alu.murciaeduca.es](mailto:13763596@alu.murciaeduca.es)
+Institución: IES Infanta Elena [https://iesinfantaelena.es](https://iesinfantaelena.es)
+
+---
+
+## Licencia
+Licencia documentada en el archivo **LICENSE.md**
+
+© 2025–2026 MacroMate – Smart Nutrition
+Proyecto académico desarrollado para fines educativos. 
