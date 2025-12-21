@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Bungee } from "next/font/google";
+import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
 const bungee = Bungee({
@@ -22,6 +23,7 @@ export default function RootLayout({
     <html lang="es">
       <body className={bungee.variable}>
         {children}
+        <Toaster position="top-center"/>
       </body>
     </html>
   );

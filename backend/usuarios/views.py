@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from rest_framework import status
+from django.db import transaction
 
 from .models import Usuario, Perfil
 from .serializers import (
@@ -24,21 +25,26 @@ def registro_usuario(request):
     serializer = UsuarioRegistroSerializer(data=request.data)
     
     if serializer.is_valid():
-        usuario = serializer.save()
-        
-        # Crear perfil vacío automáticamente
-        Perfil.objects.create(id_usuario=usuario)
-        
-        # Generar tokens JWT
-        refresh = RefreshToken.for_user(usuario)
-        
-        return Response({
-            'usuario': UsuarioSerializer(usuario).data,
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-            'message': 'Usuario registrado exitosamente'
-        }, status=status.HTTP_201_CREATED)
-    
+        try:
+            with transaction.atomic(): # Atomico
+                usuario = serializer.save()
+                
+                Perfil.objects.create(id_usuario=usuario)
+                
+                refresh = RefreshToken.for_user(usuario)
+                
+                return Response({
+                    'usuario': UsuarioSerializer(usuario).data,
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                    'message': 'Usuario registrado exitosamente'
+                }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response(
+                {'error': 'Error creando el perfil de usuario'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])

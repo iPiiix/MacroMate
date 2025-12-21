@@ -169,16 +169,16 @@ export default function RegistroPage() {
       });
 
       const perfilData = await perfilRes.json();
-      console.log('✅ Respuesta perfil:', perfilData);
+      console.log('Respuesta perfil:', perfilData);
 
       if (!perfilRes.ok) {
-        console.error(' Error actualizando perfil:', perfilData);
+        console.error('Error actualizando perfil:', perfilData);
         // Aunque falle el perfil, el usuario ya está registrado
-        console.warn('⚠️ Usuario registrado pero perfil no completado');
+        console.warn('Usuario creado, pero hubo un error guardando tus datos físicos. Por favor ve a "Mi Perfil" para completarlos');
       }
 
       // MOSTRAR MENSAJE DE ÉXITO
-      console.log(' ¡Registro completado!');
+      console.log('¡Registro completado!');
       setShowSuccess(true);
       
       // Redirigir después de 2 segundos

@@ -21,11 +21,47 @@ class UsuarioAdmin(UserAdmin):
             'fields': ('nombre_usuario', 'email', 'password1', 'password2'),
         }),
     )
+
 @admin.register(Perfil)
 class PerfilAdmin(admin.ModelAdmin):
-    list_display = ('id_usuario', 'nombre', 'apellidos', 'peso_actual', 'objetivo')
-    list_filter = ('objetivo', 'nivel_actividad', 'genero')
-    search_fields = ('nombre', 'apellidos', 'id_usuario__nombre_usuario')
+    list_display = (
+        'id_usuario', 
+        'nombre_completo',  # METODO AUXILIAR
+        'genero', 
+        'altura', 
+        'peso_actual', 
+        'peso_objetivo',
+        'nivel_actividad', 
+        'objetivo',
+        'bmr',
+        'tdee'
+    )
+    
+    list_filter = ('genero', 'objetivo', 'nivel_actividad', 'fecha_actualizacion')
+    search_fields = ('nombre', 'apellidos', 'id_usuario__nombre_usuario', 'id_usuario__email')
+
+    fieldsets = (
+        ('Usuario', {
+            'fields': ('id_usuario',)
+        }),
+        ('Información Personal', {
+            'fields': ('nombre', 'apellidos', 'fecha_nacimiento', 'genero')
+        }),
+        ('Datos Físicos', {
+            'fields': ('altura', 'peso_actual', 'peso_objetivo')
+        }),
+        ('Configuración Nutricional', {
+            'fields': ('nivel_actividad', 'objetivo')
+        }),
+        ('Cálculos (Automáticos)', {
+            'fields': ('bmr', 'tdee'),
+            'classes': ('collapse',) 
+        }),
+    )
+
+    def nombre_completo(self, obj):
+        return f"{obj.nombre} {obj.apellidos}"
+    nombre_completo.short_description = 'Nombre Completo'
 
 @admin.register(MedidaCorporal)
 class MedidaCorporalAdmin(admin.ModelAdmin):
