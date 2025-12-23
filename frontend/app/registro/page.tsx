@@ -4,34 +4,93 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
+/**
+ * RegistroPage - Componente principal de la página de registro
+ * 
+ * Este componente maneja el proceso completo de registro de usuario en 3 pasos:
+ * - Paso 1: Datos personales (nombre y apellidos)
+ * - Paso 2: Credenciales de cuenta (email y contraseña)
+ * - Paso 3: Datos físicos (fecha nacimiento, género, altura, peso, nivel actividad, objetivo)
+ * 
+ * Flujo de registro:
+ * 1. Usuario completa los 3 pasos del formulario
+ * 2. Se hace POST a /api/usuarios/registro/ para crear la cuenta
+ * 3. Se hace POST a /api/usuarios/login/ para autenticar automáticamente
+ * 4. Se hace PUT a /api/usuarios/perfil/ para actualizar datos del perfil
+ * 5. Se redirige al dashboard tras registro exitoso
+ */
 export default function RegistroPage() {
+  // Router de Next.js para navegación programática
   const router = useRouter();
+  
+  // ==================== ESTADOS DEL COMPONENTE ====================
+  
+  /**
+   * loading: Indica si hay una petición HTTP en curso
+   * Se usa para deshabilitar botones y mostrar indicadores de carga
+   */
   const [loading, setLoading] = useState(false);
+  
+  /**
+   * showSuccess: Controla la visualización del mensaje de éxito
+   * Se activa cuando el registro se completa correctamente
+   */
   const [showSuccess, setShowSuccess] = useState(false);
+  
+  /**
+   * errors: Almacena mensajes de error por campo
+   * Estructura: { nombreCampo: 'mensaje de error' }
+   * Ejemplo: { email: 'Este email ya está registrado' }
+   */
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  /**
+   * currentStep: Controla qué paso del formulario se muestra (1, 2 o 3)
+   * - 1: Datos personales
+   * - 2: Credenciales
+   * - 3: Datos físicos
+   */
   const [currentStep, setCurrentStep] = useState(1);
 
+  /**
+   * formData: Almacena todos los datos del formulario
+   * Este objeto contiene todos los campos que el usuario debe completar
+   */
   const [formData, setFormData] = useState({
-    nombre: '',
-    apellidos: '',
-    email: '',
-    password: '',
-    password_confirm: '',
-    fechaNacimiento: '',
-    genero: '',
-    altura: '',
-    pesoActual: '',
-    nivel_actividad: 'sedentario',
-    objetivo: 'mantenimiento'
+    nombre: '',              // Nombre del usuario
+    apellidos: '',           // Apellidos del usuario
+    email: '',               // Email (usado como identificador único)
+    password: '',            // Contraseña (mínimo 8 caracteres)
+    password_confirm: '',    // Confirmación de contraseña
+    fechaNacimiento: '',     // Formato: YYYY-MM-DD
+    genero: '',              // 'masculino' o 'femenino'
+    altura: '',              // En centímetros
+    pesoActual: '',          // En kilogramos
+    nivel_actividad: 'sedentario',  // Nivel de actividad física
+    objetivo: 'mantenimiento'       // Objetivo del usuario
   });
 
+  // ==================== MANEJADORES DE EVENTOS ====================
+
+  /**
+   * handleChange - Actualiza el estado del formulario cuando el usuario escribe
+   * 
+   * @param e - Evento del input o select que cambió
+   * 
+   * Funcionamiento:
+   * 1. Actualiza el valor del campo en formData
+   * 2. Si ese campo tenía un error, lo limpia del estado de errores
+   * 
+   * Esto proporciona feedback inmediato al usuario: cuando corrige un campo
+   * con error, el mensaje de error desaparece automáticamente
+   */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
     
-    // Limpiar error del campo actual
+    // Limpiar error del campo si existe
     if (errors[e.target.name]) {
       setErrors({
         ...errors,
@@ -40,8 +99,20 @@ export default function RegistroPage() {
     }
   };
 
+  /**
+   * nextStep - Avanza al siguiente paso del formulario
+   * 
+   * Validaciones por paso:
+   * - Paso 1: Verifica que nombre y apellidos no estén vacíos
+   * - Paso 2: Valida email, contraseña y confirmación de contraseña
+   *   - Verifica que las contraseñas coincidan
+   *   - Verifica que la contraseña tenga al menos 8 caracteres
+   * 
+   * Si las validaciones fallan, muestra el error y no avanza.
+   * Si pasan, limpia los errores y avanza al siguiente paso.
+   */
   const nextStep = () => {
-    // Validación Paso 1
+    // VALIDACIÓN PASO 1: Datos personales
     if (currentStep === 1) {
       if (!formData.nombre || !formData.apellidos) {
         setErrors({ general: 'Por favor, completa tu nombre y apellidos.' });
@@ -49,49 +120,95 @@ export default function RegistroPage() {
       }
     } 
     
-    // Validación Paso 2
+    // VALIDACIÓN PASO 2: Credenciales de cuenta
     else if (currentStep === 2) {
+      // Verificar que todos los campos estén completos
       if (!formData.email || !formData.password || !formData.password_confirm) {
         setErrors({ general: 'Todos los campos de cuenta son obligatorios.' });
         return;
       }
+      
+      // Verificar que las contraseñas coincidan
       if (formData.password !== formData.password_confirm) {
         setErrors({ password: 'Las contraseñas no coinciden.' });
         return;
       }
+      
+      // Verificar longitud mínima de contraseña
       if (formData.password.length < 8) {
         setErrors({ password: 'La contraseña debe tener al menos 8 caracteres.' });
         return;
       }
     }
     
+    // Si todas las validaciones pasan, limpiar errores y avanzar
     setErrors({});
     setCurrentStep(prev => Math.min(prev + 1, 3));
   };
 
+  /**
+   * prevStep - Retrocede al paso anterior del formulario
+   * 
+   * Limpia los errores al retroceder para que el usuario
+   * no vea mensajes de error de pasos futuros
+   */
   const prevStep = () => {
     setErrors({});
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
+  /**
+   * handleSubmit - Procesa el registro completo del usuario
+   * 
+   * Este es el método más importante del componente. Realiza todo el flujo
+   * de registro en 4 fases:
+   * 
+   * FASE 1: CREAR CUENTA
+   * - Envía POST a /api/usuarios/registro/ con email y contraseña
+   * - Si falla, muestra los errores del backend
+   * - Si hay error en email o contraseña, retrocede al paso 2
+   * 
+   * FASE 2: LOGIN AUTOMÁTICO
+   * - Envía POST a /api/usuarios/login/ con las mismas credenciales
+   * - Si falla, informa que la cuenta se creó pero no pudo iniciar sesión
+   * - Si tiene éxito, guarda los tokens JWT en localStorage
+   * 
+   * FASE 3: ACTUALIZAR PERFIL
+   * - Envía PUT a /api/usuarios/perfil/ con todos los datos del usuario
+   * - Usa el token JWT obtenido en fase 2 para autenticación
+   * - Convierte altura y peso a números con parseFloat
+   * - Si falla, registra el error en consola (pero el registro ya está completo)
+   * 
+   * FASE 4: REDIRECCIÓN
+   * - Muestra mensaje de éxito
+   * - Espera 2 segundos
+   * - Redirige a /dashboard
+   * 
+   * Manejo de errores:
+   * - Errores de red: Muestra mensaje de error de conexión
+   * - Errores del backend: Extrae y muestra mensajes específicos por campo
+   * - Todos los errores se registran en consola para debugging
+   */
   const handleSubmit = async () => {
-    // Validación Paso 3
+    // Validar que todos los campos del paso 3 estén completos
     if (!formData.fechaNacimiento || !formData.genero || !formData.altura || !formData.pesoActual) {
       setErrors({ general: 'Por favor, completa todos los datos físicos.' });
       return;
     }
 
+    // Iniciar proceso de carga
     setLoading(true);
     setErrors({});
 
     try {
-      // PASO 1: Registrar usuario
+      // ========== FASE 1: CREAR CUENTA EN EL BACKEND ==========
       console.log(' Iniciando registro...');
+      
       const registroRes = await fetch('http://localhost:8000/api/usuarios/registro/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          nombre_usuario: formData.email,
+          nombre_usuario: formData.email,  // Usamos email como nombre de usuario
           email: formData.email,
           password: formData.password,
           password_confirm: formData.password_confirm
@@ -99,18 +216,35 @@ export default function RegistroPage() {
       });
 
       const userData = await registroRes.json();
-      console.log(' Respuesta registro:', userData);
+      console.log('Respuesta registro:', userData);
 
+      // Si el registro falla, procesar y mostrar errores
       if (!registroRes.ok) {
         console.error(' Error en registro:', userData);
+        
+        // Crear objeto de errores a partir de la respuesta del backend
         const newErrors: Record<string, string> = {};
         
-        if (userData.email) newErrors.email = Array.isArray(userData.email) ? userData.email[0] : userData.email;
-        if (userData.password) newErrors.password = Array.isArray(userData.password) ? userData.password[0] : userData.password;
-        if (userData.non_field_errors) newErrors.general = Array.isArray(userData.non_field_errors) ? userData.non_field_errors[0] : userData.non_field_errors;
+        // El backend puede devolver errores como strings o arrays
+        if (userData.email) {
+          newErrors.email = Array.isArray(userData.email) 
+            ? userData.email[0] 
+            : userData.email;
+        }
+        if (userData.password) {
+          newErrors.password = Array.isArray(userData.password) 
+            ? userData.password[0] 
+            : userData.password;
+        }
+        if (userData.non_field_errors) {
+          newErrors.general = Array.isArray(userData.non_field_errors) 
+            ? userData.non_field_errors[0] 
+            : userData.non_field_errors;
+        }
         
         setErrors(newErrors);
         
+        // Si el error es en email o contraseña, volver al paso 2
         if (newErrors.email || newErrors.password) {
           setCurrentStep(2);
         }
@@ -119,8 +253,9 @@ export default function RegistroPage() {
         return;
       }
 
-      // PASO 2: Hacer login automático
-      console.log('Iniciando sesión automática...');
+      // ========== FASE 2: LOGIN AUTOMÁTICO ==========
+      console.log(' Iniciando sesión automática...');
+      
       const loginRes = await fetch('http://localhost:8000/api/usuarios/login/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -131,70 +266,80 @@ export default function RegistroPage() {
       });
 
       const loginData = await loginRes.json();
-      console.log('Respuesta login:', loginData);
+      console.log(' Respuesta login:', loginData);
 
       if (!loginRes.ok) {
         console.error(' Error en login:', loginData);
-        setErrors({ general: 'Cuenta creada pero no se pudo iniciar sesión automáticamente.' });
+        setErrors({ 
+          general: 'Cuenta creada pero no se pudo iniciar sesión automáticamente.' 
+        });
         setLoading(false);
         return;
       }
 
-      // Guardar tokens
+      // Guardar tokens JWT en localStorage para mantener la sesión
+      // access_token: Token de acceso (corta duración, ~15-30 min)
+      // refresh_token: Token para renovar el access_token (larga duración, ~7-30 días)
       const token = loginData.access;
       localStorage.setItem('access_token', token);
       if (loginData.refresh) {
         localStorage.setItem('refresh_token', loginData.refresh);
       }
 
-      // PASO 3: Actualizar perfil con datos adicionales
-      console.log('👤 Actualizando perfil...');
+      // ========== FASE 3: ACTUALIZAR PERFIL CON DATOS FÍSICOS ==========
+      console.log(' Actualizando perfil...');
+      
       const perfilRes = await fetch('http://localhost:8000/api/usuarios/perfil/', {
-        method: 'PUT', 
+        method: 'PUT',  // PUT porque estamos actualizando un recurso existente
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`  // Incluir token JWT para autenticación
         },
         body: JSON.stringify({
           nombre: formData.nombre,
           apellidos: formData.apellidos,
           fecha_nacimiento: formData.fechaNacimiento,
           genero: formData.genero,
-          altura: parseFloat(formData.altura),
-          peso_actual: parseFloat(formData.pesoActual),
-          peso_objetivo: parseFloat(formData.pesoActual),
+          altura: parseFloat(formData.altura),        // Convertir a número
+          peso_actual: parseFloat(formData.pesoActual), // Convertir a número
+          peso_objetivo: parseFloat(formData.pesoActual), // Por ahora igual al actual
           nivel_actividad: formData.nivel_actividad,
           objetivo: formData.objetivo
         })
       });
 
       const perfilData = await perfilRes.json();
-      console.log('Respuesta perfil:', perfilData);
+      console.log(' Respuesta perfil:', perfilData);
 
+      // Si falla la actualización del perfil, lo registramos pero no bloqueamos
+      // porque el usuario ya está registrado y autenticado
       if (!perfilRes.ok) {
-        console.error('Error actualizando perfil:', perfilData);
-        // Aunque falle el perfil, el usuario ya está registrado
-        console.warn('Usuario creado, pero hubo un error guardando tus datos físicos. Por favor ve a "Mi Perfil" para completarlos');
+        console.error(' Error actualizando perfil:', perfilData);
       }
 
-      // MOSTRAR MENSAJE DE ÉXITO
-      console.log('¡Registro completado!');
+      // ========== FASE 4: MOSTRAR ÉXITO Y REDIRIGIR ==========
+      console.log(' ¡Registro completado!');
       setShowSuccess(true);
       
-      // Redirigir después de 2 segundos
+      // Esperar 2 segundos antes de redirigir para que el usuario
+      // vea el mensaje de éxito
       setTimeout(() => {
         router.push('/dashboard');
       }, 2000);
 
     } catch (error) {
-      console.error('Error fatal:', error);
+      // Capturar errores de red (servidor no disponible, timeout, etc.)
+      console.error(' Error fatal:', error);
       setErrors({
         general: 'Error de conexión con el servidor. Verifica que el backend esté ejecutándose en http://localhost:8000'
       });
     } finally {
+      // Siempre detener el indicador de carga, independientemente del resultado
       setLoading(false);
     }
   };
+
+  // ==================== RENDERIZADO DEL COMPONENTE ====================
 
   return (
     <div style={{
@@ -204,7 +349,7 @@ export default function RegistroPage() {
       display: 'flex',
       flexDirection: 'column'
     }}>
-      {/* HEADER */}
+      {/* HEADER CON LOGO */}
       <header style={{
         borderRadius: '0 0 10px 10px',
         backgroundColor: '#ffffff',
@@ -224,7 +369,7 @@ export default function RegistroPage() {
         </div>
       </header>
 
-      {/* CONTENIDO PRINCIPAL */}
+      {/* CONTENEDOR PRINCIPAL DEL FORMULARIO */}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -241,7 +386,7 @@ export default function RegistroPage() {
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
         }}>
           
-          {/* TÍTULO */}
+          {/* TÍTULO DE LA APLICACIÓN */}
           <h1 style={{
             textAlign: 'center',
             fontSize: '32px',
@@ -263,13 +408,21 @@ export default function RegistroPage() {
             Crea tu cuenta en 3 simples pasos
           </p>
 
-          {/* INDICADOR DE PASOS */}
+          {/* ========== INDICADOR DE PROGRESO DE PASOS ========== */}
+          {/* 
+            Este componente visual muestra al usuario en qué paso está
+            y cuántos pasos faltan. Incluye:
+            - Línea de progreso horizontal
+            - Círculos numerados para cada paso
+            - Etiquetas descriptivas
+          */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             marginBottom: '30px',
             position: 'relative'
           }}>
+            {/* Línea de fondo (gris) */}
             <div style={{
               position: 'absolute',
               top: '15px',
@@ -279,6 +432,7 @@ export default function RegistroPage() {
               backgroundColor: '#e0e0e0',
               zIndex: 0
             }}>
+              {/* Línea de progreso (negra) - crece según el paso actual */}
               <div style={{
                 height: '100%',
                 backgroundColor: '#1a1a1a',
@@ -287,6 +441,7 @@ export default function RegistroPage() {
               }} />
             </div>
             
+            {/* Generar los 3 círculos de paso */}
             {[1, 2, 3].map(step => (
               <div key={step} style={{
                 display: 'flex',
@@ -296,10 +451,12 @@ export default function RegistroPage() {
                 position: 'relative',
                 zIndex: 1
               }}>
+                {/* Círculo numerado */}
                 <div style={{
                   width: '32px',
                   height: '32px',
                   borderRadius: '50%',
+                  // Cambiar color según si el paso está completado/actual
                   backgroundColor: currentStep >= step ? '#1a1a1a' : '#e0e0e0',
                   color: currentStep >= step ? '#fff' : '#999',
                   display: 'flex',
@@ -312,6 +469,7 @@ export default function RegistroPage() {
                 }}>
                   {step}
                 </div>
+                {/* Etiqueta del paso */}
                 <span style={{
                   fontSize: '10px',
                   marginTop: '8px',
@@ -325,7 +483,8 @@ export default function RegistroPage() {
             ))}
           </div>
 
-          {/* MENSAJE DE ÉXITO */}
+          {/* ========== MENSAJE DE ÉXITO ========== */}
+          {/* Se muestra cuando el registro se completa correctamente */}
           {showSuccess && (
             <div style={{
               backgroundColor: '#4caf50',
@@ -339,11 +498,12 @@ export default function RegistroPage() {
               fontSize: '15px',
               fontWeight: '500'
             }}>
-              ✓ ¡Registro exitoso! Redirigiendo al dashboard...
+              ✓ ¡Registro exitoso! Redirigiendo...
             </div>
           )}
 
-          {/* MENSAJE DE ERROR GENERAL */}
+          {/* ========== MENSAJE DE ERROR GENERAL ========== */}
+          {/* Se muestra para errores que no son específicos de un campo */}
           {errors.general && (
             <div style={{
               backgroundColor: '#f44336',
@@ -359,7 +519,8 @@ export default function RegistroPage() {
             </div>
           )}
 
-          {/* PASO 1: DATOS PERSONALES */}
+          {/* ========== PASO 1: DATOS PERSONALES ========== */}
+          {/* Captura nombre y apellidos del usuario */}
           {currentStep === 1 && (
             <div style={{ animation: 'fadeIn 0.3s ease' }}>
               <div style={{ marginBottom: '20px' }}>
@@ -393,7 +554,8 @@ export default function RegistroPage() {
             </div>
           )}
 
-          {/* PASO 2: CUENTA */}
+          {/* ========== PASO 2: CREDENCIALES DE CUENTA ========== */}
+          {/* Captura email y contraseña con confirmación */}
           {currentStep === 2 && (
             <div style={{ animation: 'fadeIn 0.3s ease' }}>
               <div style={{ marginBottom: '20px' }}>
@@ -434,6 +596,7 @@ export default function RegistroPage() {
                 {errors.password && <span style={errorTextStyle}>{errors.password}</span>}
               </div>
               
+              {/* Botones de navegación */}
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button onClick={prevStep} style={buttonSecondaryStyle}>
                   ← ATRÁS
@@ -445,7 +608,15 @@ export default function RegistroPage() {
             </div>
           )}
 
-          {/* PASO 3: DATOS FÍSICOS */}
+          {/* ========== PASO 3: DATOS FÍSICOS ========== */}
+          {/* 
+            Captura información para cálculo de macros y calorías:
+            - Fecha de nacimiento (para calcular edad)
+            - Género (afecta TMB)
+            - Altura y peso (para calcular IMC y TMB)
+            - Nivel de actividad (multiplicador de calorías)
+            - Objetivo (déficit/superávit calórico)
+          */}
           {currentStep === 3 && (
             <div style={{ animation: 'fadeIn 0.3s ease' }}>
               <div style={{ marginBottom: '15px' }}>
@@ -473,6 +644,7 @@ export default function RegistroPage() {
                 </select>
               </div>
 
+              {/* Grid de 2 columnas para altura y peso */}
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
@@ -535,6 +707,7 @@ export default function RegistroPage() {
                 </select>
               </div>
 
+              {/* Botones de navegación final */}
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button onClick={prevStep} style={buttonSecondaryStyle}>
                   ← ATRÁS
@@ -554,7 +727,7 @@ export default function RegistroPage() {
             </div>
           )}
 
-          {/* PIE DE FORMULARIO */}
+          {/* ENLACE A LOGIN */}
           <p style={{
             textAlign: 'center',
             fontSize: '13px',
@@ -605,8 +778,13 @@ export default function RegistroPage() {
   );
 }
 
-// ==================== ESTILOS ====================
+// ==================== ESTILOS REUTILIZABLES ====================
 
+/**
+ * Estilo para etiquetas de formulario
+ * - Fuente Bungee para mantener consistencia con el branding
+ * - Mayúsculas y espaciado de letras para aspecto robusto
+ */
 const labelStyle = {
   display: 'block',
   fontSize: '12px',
@@ -614,9 +792,15 @@ const labelStyle = {
   color: '#1a1a1a',
   marginBottom: '8px',
   letterSpacing: '0.5px',
-  fontFamily: "'Bungee', sans-serif" // Solo los labels mantienen Bungee
+  fontFamily: "'Bungee', sans-serif"
 };
 
+/**
+ * Estilo para inputs y selects
+ * - Fondo gris claro (#e0e0e0) para contraste suave
+ * - Sin borde visible normalmente (border transparent)
+ * - Padding generoso para facilitar interacción táctil
+ */
 const inputStyle = {
   width: '100%',
   padding: '14px 16px',
@@ -632,6 +816,12 @@ const inputStyle = {
   cursor: 'pointer'
 };
 
+/**
+ * Estilo para botón primario (acciones principales)
+ * - Fondo negro sólido para máximo contraste
+ * - Texto blanco en mayúsculas
+ * - Crece con flex: 1 para ocupar espacio disponible
+ */
 const buttonPrimaryStyle = {
   flex: 1,
   padding: '16px',
@@ -648,6 +838,11 @@ const buttonPrimaryStyle = {
   fontWeight: '600'
 };
 
+/**
+ * Estilo para botón secundario (acciones de retroceso)
+ * - Fondo transparente con borde negro
+ * - Menos prominente que el botón primario
+ */
 const buttonSecondaryStyle = {
   flex: 1,
   padding: '16px',
@@ -664,6 +859,11 @@ const buttonSecondaryStyle = {
   fontWeight: '600'
 };
 
+/**
+ * Estilo para mensajes de error
+ * - Color rojo para indicar problema
+ * - Tamaño pequeño para no dominar la UI
+ */
 const errorTextStyle = {
   color: '#d32f2f',
   fontSize: '12px',
