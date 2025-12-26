@@ -1,466 +1,846 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 /**
- * DashboardPage - Página principal provisional después del login
+ * HomePage - Página de inicio de MacroMate
  * 
- * Esta es una página provisional que sirve como punto de llegada después
- * de que el usuario inicie sesión o se registre. En futuras iteraciones,
- * esta página mostrará:
- * - Panel de macros diarios
- * - Resumen de comidas
- * - Gráficos de progreso
- * - Registro rápido de alimentos
+ * Esta es la landing page principal que muestra:
+ * - Header con navegación a diferentes secciones
+ * - Sección hero con mensaje motivacional
+ * - Sección de seguimiento de progreso
+ * - Sección de planificación de comidas
+ * - Footer con información y enlaces
  * 
- * Por ahora, muestra:
- * - Mensaje de bienvenida
- * - Información básica del usuario (si está disponible)
- * - Botón de cierre de sesión
- * 
- * Funcionalidades implementadas:
- * - Verificación de autenticación (redirige a login si no hay token)
- * - Carga de datos del perfil desde el backend
- * - Cierre de sesión (elimina tokens y redirige)
- * - Estados de carga y error
+ * Diseño: Fondo oscuro (#2b2b2b) con secciones destacadas
  */
-export default function DashboardPage() {
+export default function HomePage() {
   const router = useRouter();
-  
-  // ==================== ESTADOS DEL COMPONENTE ====================
-  
-  /**
-   * userData: Almacena la información del usuario obtenida del backend
-   * Estructura esperada:
-   * {
-   *   nombre: string,
-   *   apellidos: string,
-   *   email: string,
-   *   fecha_nacimiento: string,
-   *   genero: string,
-   *   altura: number,
-   *   peso_actual: number,
-   *   nivel_actividad: string,
-   *   objetivo: string
-   * }
-   */
-  const [userData, setUserData] = useState<any>(null);
-  
-  /**
-   * loading: Indica si se está cargando la información del usuario
-   * true durante la petición HTTP al backend
-   */
-  const [loading, setLoading] = useState(true);
-  
-  /**
-   * error: Almacena mensajes de error si falla la carga de datos
-   * null si no hay errores
-   */
-  const [error, setError] = useState<string | null>(null);
 
-  // ==================== EFECTOS ====================
-  
-  /**
-   * useEffect - Verifica autenticación y carga datos del usuario
-   * 
-   * Este efecto se ejecuta una vez al montar el componente ([] como dependencia).
-   * 
-   * Flujo de ejecución:
-   * 1. Obtiene el access_token de localStorage
-   * 2. Si no hay token, redirige a /login inmediatamente
-   * 3. Si hay token, hace petición GET a /api/usuarios/perfil/
-   * 4. Si la petición es exitosa, guarda los datos en userData
-   * 5. Si falla (401, 403, etc.), redirige a /login
-   * 6. Si hay error de red, muestra mensaje de error
-   * 7. Siempre detiene el estado de carga al finalizar
-   * 
-   * Seguridad:
-   * - El token JWT se envía en el header Authorization
-   * - Si el token es inválido o expiró, el backend responde con 401
-   * - En ese caso, redirigimos al login para que el usuario se autentique de nuevo
-   */
-  useEffect(() => {
-    const verificarAutenticacion = async () => {
-      // Paso 1: Obtener token de localStorage
-      const token = localStorage.getItem('access_token');
-      
-      // Paso 2: Redirigir si no hay token
-      if (!token) {
-        router.push('/login');
-        return;
-      }
-
-      try {
-        // Paso 3: Hacer petición al backend para obtener datos del usuario
-        const response = await fetch('http://localhost:8000/api/usuarios/perfil/', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,  // Enviar token JWT
-            'Content-Type': 'application/json'
-          }
-        });
-
-        // Paso 4: Procesar respuesta exitosa
-        if (response.ok) {
-          const data = await response.json();
-          setUserData(data);
-        } else {
-          // Paso 5: Token inválido o expirado - redirigir a login
-          console.error('Token inválido o expirado');
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          router.push('/login');
-        }
-      } catch (err) {
-        // Paso 6: Error de red
-        console.error('Error al cargar datos del usuario:', err);
-        setError('Error al cargar los datos del usuario');
-      } finally {
-        // Paso 7: Detener carga
-        setLoading(false);
-      }
-    };
-
-    verificarAutenticacion();
-  }, [router]);
-
-  // ==================== MANEJADORES ====================
+  // ==================== MANEJADORES DE NAVEGACIÓN ====================
 
   /**
-   * handleLogout - Cierra la sesión del usuario
-   * 
-   * Flujo:
-   * 1. Elimina ambos tokens de localStorage
-   * 2. Limpia el estado del usuario
-   * 3. Redirige a la página de login
-   * 
-   * Nota: En una implementación más robusta, también se podría:
-   * - Invalidar el refresh_token en el backend
-   * - Hacer una petición a un endpoint de logout
-   * - Limpiar cualquier caché de datos del usuario
+   * Navega a la página de inicio/home
+   * Icono: Logo de MacroMate
    */
-  const handleLogout = () => {
-    // Eliminar tokens
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    
-    // Limpiar estado
-    setUserData(null);
-    
-    // Redirigir a login
-    router.push('/login');
+  const handlePaginaPrincipalClick = () => {
+    router.push('/paginaPrincipal');
   };
 
-  // ==================== RENDERIZADO CONDICIONAL ====================
+  /**
+   * Navega a la sección de recetas/comidas
+   * Icono: Imagen de comida/receta
+   */
+  const handleProgresoClick = () => {
+    router.push('/recetas');
+  };
 
   /**
-   * Estado de carga: Muestra spinner mientras se obtienen los datos
+   * Navega a la sección de nutrición/macros
+   * Icono: Cubiertos/nutrición
    */
-  if (loading) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#2b2b2b',
-        fontFamily: "'Inter', sans-serif"
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{
-            width: '60px',
-            height: '60px',
-            border: '4px solid #f5f5f5',
-            borderTop: '4px solid #1a1a1a',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 20px'
-          }} />
-          <p style={{ color: '#f5f5f5', fontSize: '16px' }}>
-            Cargando tu dashboard...
-          </p>
-        </div>
-        
-        {/* Animación de spinner */}
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
-  }
+  const handleDietasClick = () => {
+    router.push('/nutricion');
+  };
 
   /**
-   * Estado de error: Muestra mensaje si falló la carga de datos
+   * Navega al perfil del usuario
+   * Icono: Usuario/perfil
    */
-  if (error) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#2b2b2b',
-        fontFamily: "'Inter', sans-serif"
-      }}>
-        <div style={{
-          backgroundColor: '#f5f5f5',
-          padding: '40px',
-          borderRadius: '20px',
-          textAlign: 'center',
-          maxWidth: '400px'
-        }}>
-          <h2 style={{ color: '#d32f2f', marginBottom: '15px' }}>Error</h2>
-          <p style={{ color: '#666', marginBottom: '20px' }}>{error}</p>
-          <button
-            onClick={() => router.push('/login')}
-            style={{
-              padding: '12px 24px',
-              backgroundColor: '#1a1a1a',
-              color: 'white',
-              border: 'none',
-              borderRadius: '10px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600'
-            }}
-          >
-            Volver al login
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const handlePerfilClick = () => {
+    router.push('/perfil');
+  };
 
-  // ==================== RENDERIZADO PRINCIPAL ====================
+  /**
+   * Navega a la sección de objetivos/metas
+   * Asociado al icono del músculo en la primera sección
+   */
+  const handleMetasClick = () => {
+    router.push('/objetivos');
+  };
+
+  /**
+   * Navega a la sección de seguimiento diario
+   * Asociado al icono del calendario en la segunda sección
+   */
+  const handleProgressClick = () => {
+    router.push('/progreso');
+  };
+
+  /**
+   * Navega a la sección de planificación de comidas
+   * Asociado al icono de cubiertos en la tercera sección
+   */
+  const handleMealsClick = () => {
+    router.push('/comidas');
+  };
+
+  // ==================== RENDERIZADO ====================
 
   return (
     <div style={{
       fontFamily: "'Bungee', -apple-system, BlinkMacSystemFont, sans-serif",
       backgroundColor: '#2b2b2b',
       minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column'
+      color: '#ffffff'
     }}>
-      {/* ========== HEADER CON LOGO Y BOTÓN DE LOGOUT ========== */}
+      {/* ========== HEADER CON NAVEGACIÓN ========== */}
+      {/*
+        Header fijo con logo y 4 iconos de navegación
+        - Logo MacroMate (izquierda)
+        - 4 iconos de navegación (derecha)
+        Todos los iconos son clickeables y redirigen a su página correspondiente
+      */}
       <header style={{
-        borderRadius: '0 0 10px 10px',
-        backgroundColor: '#ffffff',
-        padding: '15px 20px',
+        backgroundColor: '#222222ff',
+        padding: '15px 30px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',  // Logo a la izquierda, botón a la derecha
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
+        justifyContent: 'space-between',
+        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000
       }}>
-        {/* Logo */}
-        <div style={{ width: '60px', height: '40px', position: 'relative' }}>
-          <Image 
-            src="/Logo.png" 
-            alt="MacroMate Logo" 
-            fill 
-            style={{ objectFit: 'cover' }}
-            priority
-          />
-        </div>
-        
-        {/* Botón de logout */}
-        <button
-          onClick={handleLogout}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#1a1a1a',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontWeight: '600',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            transition: 'all 0.2s ease',
-            fontFamily: "'Inter', sans-serif"
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#333';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#1a1a1a';
+        {/* Logo MacroMate - Clickeable para volver al inicio */}
+        <div 
+          onClick={handlePaginaPrincipalClick}
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            cursor: 'pointer'
           }}
         >
-          Cerrar Sesión
-        </button>
+          <span style={{
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: '#33A6DF',
+            letterSpacing: '1px'
+          }}>
+            M
+          </span>
+          <span style={{
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: '#000000ff',
+            letterSpacing: '1px',
+            textShadow: '1px 1px 2px #33A6DF'
+
+          }}>
+            ACRO
+          </span>
+          <span style={{
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: '#33A6DF',
+            letterSpacing: '1px'
+          }}>
+            M
+          </span>
+          <span style={{
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: '#000000ff',
+            letterSpacing: '1px',
+            textShadow: '1px 1px 2px #33A6DF'
+          }}>
+            ATE
+          </span>
+          
+          
+        </div>
+
+        {/* Iconos de navegación */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '85px'
+        }}>
+          {/* Icono 1: Metas */}
+          <div 
+            onClick={handlePaginaPrincipalClick}
+            style={{
+              width: '35px',
+              height: '35px',
+              position: 'relative',
+              cursor: 'pointer',
+              transition: 'transform 0.2s ease',
+            }}
+            //Animaciones
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+          
+            <div style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#33A6DF',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px'
+            }}><Image 
+                  src="/metas.png" 
+                  alt="Inicio" 
+                  fill 
+                /></div>
+          </div>
+
+          {/* Icono 2: Progreso de macros*/}
+          <div 
+            onClick={handleProgresoClick}
+            style={{
+              width: '35px',
+              height: '35px',
+              position: 'relative',
+              cursor: 'pointer',
+              transition: 'transform 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+           
+            <div style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#33A6DF',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px'
+            }}>
+              <Image 
+                  src="/progresoMacros.png" 
+                  alt="Recetas" 
+                  fill 
+                />
+            </div>
+          </div>
+
+          {/* Icono 3: Nutrición*/}
+          <div 
+            onClick={handleDietasClick}
+            style={{
+              width: '35px',
+              height: '35px',
+              position: 'relative',
+              cursor: 'pointer',
+              transition: 'transform 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+           
+            <div style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#33A6DF',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px'
+            }}>
+              <Image 
+                  src="/dietas.png" 
+                  alt="Nutrición" 
+                  fill 
+                />
+            </div>
+          </div>
+
+          {/* Icono 4: Perfil*/}
+          <div 
+            onClick={handlePerfilClick}
+            style={{
+              width: '35px',
+              height: '35px',
+              position: 'relative',
+              cursor: 'pointer',
+              transition: 'transform 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+          
+            <div style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#33A6DF',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative', 
+              overflow: 'hidden',    
+            }}>
+              <Image 
+                  src="/perfil.png" 
+                  alt="Perfil" 
+                  fill 
+                />
+            </div>
+          </div>
+        </div>
       </header>
 
       {/* ========== CONTENIDO PRINCIPAL ========== */}
-      <div style={{
-        flex: 1,
-        padding: '40px 20px',
+      <main style={{
+        padding: '60px 40px',
         maxWidth: '1200px',
-        width: '100%',
         margin: '0 auto'
       }}>
-        {/* Tarjeta de bienvenida */}
-        <div style={{
-          backgroundColor: '#f5f5f5',
-          borderRadius: '20px',
-          padding: '40px',
-          marginBottom: '30px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+        {/* ========== SECCIÓN 1: METAS ========== */}
+      
+        <section style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '40px',
+          marginBottom: '80px',
+          alignItems: 'center'
         }}>
-          <h1 style={{
-            fontSize: '32px',
-            fontWeight: 'bold',
-            color: '#1a1a1a',
-            marginBottom: '15px',
-            letterSpacing: '2px'
-          }}>
-            BIENVENIDO, {userData?.nombre?.toUpperCase() || 'USUARIO'}
-          </h1>
-          
-          <p style={{
-            fontSize: '16px',
-            color: '#666',
-            fontFamily: "'Inter', sans-serif",
-            lineHeight: '1.6',
-            marginBottom: '20px'
-          }}>
-            Este es tu dashboard provisional. Aquí podrás ver tus macros diarios,
-            registrar tus comidas y hacer seguimiento de tu progreso.
-          </p>
+          {/* Columna izquierda: Icono y texto */}
+          <div>
+            {/* Icono de músculo - INSERTA TU IMAGEN AQUÍ */}
+            <div 
+              onClick={handleMetasClick}
+              style={{
+                width: '80px',
+                height: '80px',
+                position: 'relative',
+                marginBottom: '30px',
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              {/* NOTA: Reemplaza este div con tu imagen
+                  <Image 
+                    src="/images/muscle-icon.png" 
+                    alt="Objetivos" 
+                    fill 
+                    style={{ objectFit: 'contain' }}
+                  />
+              */}
+              <div style={{
+                width: '100%',
+                height: '100%',
+                backgroundColor: '#4a9eff',
+                borderRadius: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '48px'
+              }}>💪</div>
+            </div>
 
-          <div style={{
-            backgroundColor: '#e8f5e9',
-            padding: '20px',
-            borderRadius: '12px',
-            border: '2px solid #4caf50'
-          }}>
-            <p style={{
-              fontSize: '14px',
-              color: '#2e7d32',
-              fontFamily: "'Inter', sans-serif",
-              margin: 0
-            }}>
-              ✓ Has iniciado sesión correctamente. Tu cuenta está lista para usar.
-            </p>
-          </div>
-        </div>
-
-        {/* ========== INFORMACIÓN DEL USUARIO ========== */}
-        {/* 
-          Esta sección muestra los datos del perfil del usuario
-          organizados en una cuadrícula responsive
-        */}
-        {userData && (
-          <div style={{
-            backgroundColor: '#f5f5f5',
-            borderRadius: '20px',
-            padding: '40px',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
-          }}>
-            <h2 style={{
-              fontSize: '24px',
+            {/* Título */}
+            <h1 style={{
+              fontSize: '36px',
               fontWeight: 'bold',
-              color: '#1a1a1a',
-              marginBottom: '25px',
+              color: '#ffffff',
+              marginBottom: '20px',
+              lineHeight: '1.2',
               letterSpacing: '1px'
             }}>
-              TU PERFIL
+              LA META LA PONES TÚ...
+            </h1>
+
+            {/* Texto descriptivo */}
+            <p style={{
+              fontSize: '15px',
+              color: '#cccccc',
+              lineHeight: '1.8',
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: '300'
+            }}>
+              Este es el objetivo donde definirás cuál será tu ideal de desarrollo 
+              físico desde el cual vas partir. Este ideal se volverá el objetivo que 
+              lucharás por alcanzar para que tu cuerpo refleje al máximo todos los 
+              sacrificios que has tomado. La plataforma junto con las herramientas a las 
+              cuales puedes tener acceso, estará aquí para que puedas desafiar lo que crees 
+              es imposible con tu cuerpo y demostrar que eres fuerte y decidido, 
+              enfrentándote y dándote cuenta de que eres mucho más que lo que crees de 
+              ti mismo. Día a día desde tu compromiso con alimentarte con el plan que has 
+              generado donde todo está contado, cada remordimiento y cada decisión que 
+              tomes será una consola en ti para que al pasar de los días puedas sentir tu 
+              cuerpo crecer y el perfil que buscas donde todo lo que has deseado lograr 
+              hoy lo tendrás de manera física frente a tus ojos lleno de transformación 
+              en resultados reales.
+            </p>
+          </div>
+
+          {/* Columna derecha: Imagen de culturistas - INSERTA TU IMAGEN AQUÍ */}
+          <div style={{
+            width: '100%',
+            height: '400px',
+            position: 'relative',
+            borderRadius: '20px',
+            overflow: 'hidden'
+          }}>
+            {/* NOTA: Reemplaza este div con tu imagen
+                <Image 
+                  src="/images/bodybuilders.png" 
+                  alt="Culturistas" 
+                  fill 
+                  style={{ objectFit: 'cover' }}
+                />
+            */}
+            <div style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#1a1a1a',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '48px'
+            }}>🏋️</div>
+          </div>
+        </section>
+
+        {/* ========== SECCIÓN 2: TÚ PROGRESO DÍA A DÍA ========== */}
+        {/*
+          Segunda sección con:
+          - Imagen ilustrativa a la izquierda
+          - Icono de calendario (clickeable) a la derecha
+          - Título "TÚ PROGRESO DÍA A DÍA"
+          - Texto descriptivo
+        */}
+        <section style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '40px',
+          marginBottom: '80px',
+          alignItems: 'center'
+        }}>
+          {/* Columna izquierda: Imagen ilustrativa - INSERTA TU IMAGEN AQUÍ */}
+          <div style={{
+            width: '100%',
+            height: '350px',
+            position: 'relative',
+            borderRadius: '20px',
+            overflow: 'hidden'
+          }}>
+            {/* NOTA: Reemplaza este div con tu imagen
+                <Image 
+                  src="/images/progress-illustration.png" 
+                  alt="Progreso" 
+                  fill 
+                  style={{ objectFit: 'cover' }}
+                />
+            */}
+            <div style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#1a1a1a',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '48px'
+            }}>📊</div>
+          </div>
+
+          {/* Columna derecha: Icono y texto */}
+          <div>
+            {/* Icono de calendario - INSERTA TU IMAGEN AQUÍ */}
+            <div 
+              onClick={handleProgressClick}
+              style={{
+                width: '80px',
+                height: '80px',
+                position: 'relative',
+                marginBottom: '30px',
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              {/* NOTA: Reemplaza este div con tu imagen
+                  <Image 
+                    src="/images/calendar-icon.png" 
+                    alt="Progreso Diario" 
+                    fill 
+                    style={{ objectFit: 'contain' }}
+                  />
+              */}
+              <div style={{
+                width: '100%',
+                height: '100%',
+                backgroundColor: '#4a9eff',
+                borderRadius: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '48px'
+              }}>📅</div>
+            </div>
+
+            {/* Título */}
+            <h2 style={{
+              fontSize: '36px',
+              fontWeight: 'bold',
+              color: '#ffffff',
+              marginBottom: '20px',
+              lineHeight: '1.2',
+              letterSpacing: '1px'
+            }}>
+              TÚ PROGRESO DÍA A DÍA
             </h2>
 
-            {/* Grid de información del usuario */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '20px',
-              fontFamily: "'Inter', sans-serif"
+            {/* Texto descriptivo */}
+            <p style={{
+              fontSize: '15px',
+              color: '#cccccc',
+              lineHeight: '1.8',
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: '300'
             }}>
-              {/* Cada campo del perfil */}
-              {[
-                { label: 'Email', value: userData.email },
-                { label: 'Nombre completo', value: `${userData.nombre} ${userData.apellidos}` },
-                { label: 'Fecha de nacimiento', value: userData.fecha_nacimiento },
-                { label: 'Género', value: userData.genero },
-                { label: 'Altura', value: `${userData.altura} cm` },
-                { label: 'Peso actual', value: `${userData.peso_actual} kg` },
-                { label: 'Nivel de actividad', value: userData.nivel_actividad },
-                { label: 'Objetivo', value: userData.objetivo }
-              ].map((item, index) => (
-                <div
-                  key={index}
-                  style={{
-                    backgroundColor: '#e0e0e0',
-                    padding: '20px',
-                    borderRadius: '12px'
-                  }}
-                >
-                  <p style={{
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    color: '#666',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    marginBottom: '8px'
-                  }}>
-                    {item.label}
-                  </p>
-                  <p style={{
-                    fontSize: '16px',
-                    color: '#1a1a1a',
-                    fontWeight: '600',
-                    margin: 0
-                  }}>
-                    {item.value || 'No especificado'}
-                  </p>
-                </div>
-              ))}
-            </div>
+              Aquí es donde tu compromiso se cristaliza en resultados reales. Registra tus 
+              comidas cada día de la semana sin fallar y rellena cada uno de tus logros 
+              para que tu decisión pase de ser comida, corte estrictas y números a algo 
+              muy especial que es un cambio con el cual darás una opinión cuando veas tu 
+              progreso y al momento cómprate cada día puedas ver e imitar aquello. Este es 
+              tu espacio para que mantengas el control de tu vida y puedas comprobar algo 
+              muy especial respecto a lo que estás haciendo al obtener peso, masa y medida 
+              y tomar la decisión completa de cumplir con tu sueño.
+            </p>
           </div>
-        )}
+        </section>
 
-        {/* ========== PRÓXIMAS FUNCIONALIDADES ========== */}
-        {/* 
-          Sección informativa sobre las features que se implementarán
-          en futuras versiones del dashboard
+        {/* ========== SECCIÓN 3: TU COMBUSTIBLE PARA EL CAMBIO ========== */}
+        {/*
+          Tercera sección con:
+          - Icono de cubiertos (clickeable) a la izquierda
+          - Título "TU COMBUSTIBLE PARA EL CAMBIO"
+          - Texto descriptivo
+          - Grid de imágenes de comidas a la derecha (3x3)
         */}
-        <div style={{
-          backgroundColor: '#f5f5f5',
-          borderRadius: '20px',
-          padding: '40px',
-          marginTop: '30px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+        <section style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '40px',
+          marginBottom: '60px',
+          alignItems: 'center'
         }}>
-          <h2 style={{
-            fontSize: '24px',
-            fontWeight: 'bold',
-            color: '#1a1a1a',
-            marginBottom: '20px',
-            letterSpacing: '1px'
-          }}>
-            PRÓXIMAMENTE
-          </h2>
+          {/* Columna izquierda: Icono y texto */}
+          <div>
+            {/* Icono de cubiertos - INSERTA TU IMAGEN AQUÍ */}
+            <div 
+              onClick={handleMealsClick}
+              style={{
+                width: '80px',
+                height: '80px',
+                position: 'relative',
+                marginBottom: '30px',
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              {/* NOTA: Reemplaza este div con tu imagen
+                  <Image 
+                    src="/images/cutlery-icon.png" 
+                    alt="Comidas" 
+                    fill 
+                    style={{ objectFit: 'contain' }}
+                  />
+              */}
+              <div style={{
+                width: '100%',
+                height: '100%',
+                backgroundColor: '#4a9eff',
+                borderRadius: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '48px'
+              }}>🍴</div>
+            </div>
 
-          <ul style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: '15px',
-            color: '#666',
-            lineHeight: '2',
-            paddingLeft: '20px'
+            {/* Título */}
+            <h2 style={{
+              fontSize: '36px',
+              fontWeight: 'bold',
+              color: '#ffffff',
+              marginBottom: '20px',
+              lineHeight: '1.2',
+              letterSpacing: '1px'
+            }}>
+              TU COMBUSTIBLE PARA EL CAMBIO
+            </h2>
+
+            {/* Texto descriptivo */}
+            <p style={{
+              fontSize: '15px',
+              color: '#cccccc',
+              lineHeight: '1.8',
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: '300'
+            }}>
+              Esta herramienta es la que permitirá una conexión más importante. Descarga 
+              datos importantes que harán cambiar tu forma de pensar desde cual es tu 
+              macro-nutrición y también las cantidades adecuadas de comida preparadas 
+              para ayudarte a cumplir tu objetivo. Este paso será clave para tu éxito, 
+              aquí tendrás todo lo necesario para que tu cuerpo cambie y empiece a 
+              construir lo que quieres ser. Cuando más lo uses más deseo de disfrutar las 
+              comidas podrás sentir. Cada idea para alimentar tus músculos éxito sostenido 
+              el perfil de colesterol y poder formar estructura. Este programa no te 
+              privará de algo sino que tendrá el poder para permitir que tú vivas comiendo 
+              mejor y más sano.
+              <br /><br />
+              No es falta de comer menos, sino de comer mejor. Aquí encontrarás cómo 
+              transformar tus hábitos alimenticios en una estructura bien planeada de ayuno 
+              y de recibo. Con cada menú diseñado para tu máximo en rendimiento sostenido 
+              un perfil que se adecúe a tu objetivo. Nunca se debe sentirse como una dieta, 
+              sino como tu primera experiencia en alimentarte de forma equilibrada con 
+              nutrición. La mentoría incluida será la guía adecuada para los resultados que 
+              buscas, y podrás incluso ser creativo con nuestras indicaciones.
+            </p>
+          </div>
+
+          {/* Columna derecha: Grid de imágenes de comidas (3x3) */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '15px'
           }}>
-            <li>Panel de macros diarios (proteínas, carbohidratos, grasas)</li>
-            <li>Registro rápido de alimentos y comidas</li>
-            <li>Historial de comidas del día</li>
-            <li>Gráficos de progreso semanal y mensual</li>
-            <li>Calculadora de calorías personalizada</li>
-            <li>Seguimiento de peso y medidas corporales</li>
-            <li>Sugerencias de comidas según tus macros restantes</li>
-            <li>Integración con bases de datos de alimentos</li>
-          </ul>
+            {/* Generar 9 placeholders para imágenes de comidas */}
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((index) => (
+              <div 
+                key={index}
+                style={{
+                  width: '100%',
+                  aspectRatio: '1',
+                  position: 'relative',
+                  borderRadius: '15px',
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s ease',
+                }}
+                onClick={handleMealsClick}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                {/* NOTA: Reemplaza estos divs con tus imágenes de comidas
+                    <Image 
+                      src={`/images/meal-${index}.jpg`} 
+                      alt={`Comida ${index}`} 
+                      fill 
+                      style={{ objectFit: 'cover' }}
+                    />
+                */}
+                <div style={{
+                  width: '100%',
+                  height: '100%',
+                  backgroundColor: '#1a1a1a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '32px'
+                }}>🍱</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+
+      {/* ========== FOOTER ========== */}
+      {/*
+        Footer con:
+        - Copyright y texto legal
+        - Enlaces a redes sociales
+        - Enlaces a términos y condiciones
+      */}
+      <footer style={{
+        backgroundColor: '#1a1a1a',
+        padding: '40px 40px 30px',
+        borderTop: '1px solid #333'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          textAlign: 'center'
+        }}>
+          {/* Copyright y texto legal */}
+          <p style={{
+            fontSize: '12px',
+            color: '#888',
+            marginBottom: '15px',
+            fontFamily: "'Inter', sans-serif",
+            lineHeight: '1.6'
+          }}>
+            © 2025 MacroMate. Todos los derechos reservados.
+            <br />
+            Te informo de nuestra privacidad y claridad lector para quien eres libre consciencia 
+            en el uso que le dar y que esto no sustituya la atención médica de un profesional.
+          </p>
+
+          {/* Enlaces */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '30px',
+            marginBottom: '15px',
+            flexWrap: 'wrap'
+          }}>
+            <a 
+              href="/contacto" 
+              style={{
+                fontSize: '12px',
+                color: '#4a9eff',
+                textDecoration: 'none',
+                fontFamily: "'Inter', sans-serif",
+                transition: 'color 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#6bb3ff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#4a9eff';
+              }}
+            >
+              📧 Contacto: contact@macromate.com
+            </a>
+            <a 
+              href="tel:+34123456789" 
+              style={{
+                fontSize: '12px',
+                color: '#4a9eff',
+                textDecoration: 'none',
+                fontFamily: "'Inter', sans-serif",
+                transition: 'color 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#6bb3ff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#4a9eff';
+              }}
+            >
+              📞 Tel: +34 123 456 789
+            </a>
+            <a 
+              href="https://instagram.com/macromate" 
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontSize: '12px',
+                color: '#4a9eff',
+                textDecoration: 'none',
+                fontFamily: "'Inter', sans-serif",
+                transition: 'color 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#6bb3ff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#4a9eff';
+              }}
+            >
+              📱 Instagram
+            </a>
+          </div>
+
+          {/* Enlaces legales */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '20px',
+            fontSize: '11px',
+            color: '#666',
+            fontFamily: "'Inter', sans-serif"
+          }}>
+            <a 
+              href="/terminos" 
+              style={{
+                color: '#666',
+                textDecoration: 'none',
+                transition: 'color 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#4a9eff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#666';
+              }}
+            >
+              Términos de Servicio
+            </a>
+            <span>|</span>
+            <a 
+              href="/privacidad" 
+              style={{
+                color: '#666',
+                textDecoration: 'none',
+                transition: 'color 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#4a9eff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#666';
+              }}
+            >
+              Privacidad
+            </a>
+            <span>|</span>
+            <a 
+              href="/aviso-legal" 
+              style={{
+                color: '#666',
+                textDecoration: 'none',
+                transition: 'color 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#4a9eff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#666';
+              }}
+            >
+              Aviso Legal
+            </a>
+          </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }

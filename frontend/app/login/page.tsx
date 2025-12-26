@@ -179,7 +179,7 @@ export default function LoginPage() {
       // Esperar 1 segundo antes de redirigir
       // Esto permite al usuario ver el mensaje de éxito
       setTimeout(() => {
-        router.push('/paginaPrincipal');  // Redirigir al dashboard
+        router.push('/paginaPrincipal');  // Redirigir a¡ página principal
       }, 1000);
 
     } catch (error) {
