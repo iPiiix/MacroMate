@@ -34,8 +34,10 @@ class PerfilAdmin(admin.ModelAdmin):
         'nivel_actividad', 
         'objetivo',
         'bmr',
-        'tdee'
+        'tdee',
+        'fecha_actualizacion'
     )
+    readonly_fields = ('bmr', 'tdee')
     
     list_filter = ('genero', 'objetivo', 'nivel_actividad', 'fecha_actualizacion')
     search_fields = ('nombre', 'apellidos', 'id_usuario__nombre_usuario', 'id_usuario__email')
@@ -54,8 +56,7 @@ class PerfilAdmin(admin.ModelAdmin):
             'fields': ('nivel_actividad', 'objetivo')
         }),
         ('Cálculos (Automáticos)', {
-            'fields': ('bmr', 'tdee'),
-            'classes': ('collapse',) 
+            'fields': ('bmr', 'tdee')
         }),
     )
 

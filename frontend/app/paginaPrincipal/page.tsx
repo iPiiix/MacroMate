@@ -836,7 +836,7 @@ export default function HomePage() {
                 e.currentTarget.style.color = '#666';
               }}
             >
-              Aviso Legal
+              Aviso Legal 
             </a>
           </div>
         </div>
