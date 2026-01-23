@@ -21,27 +21,17 @@ export default function HomePage() {
   // ==================== MANEJADORES DE NAVEGACIÓN ====================
 
   /**
-   * Navega a la página de inicio/home
-   * Icono: Logo de MacroMate
+   * Navega a la página de inicio
    */
   const handlePaginaPrincipalClick = () => {
     router.push('/paginaPrincipal');
   };
 
   /**
-   * Navega a la sección de recetas/comidas
-   * Icono: Imagen de comida/receta
-   */
-  const handleProgresoClick = () => {
-    router.push('/recetas');
-  };
-
-  /**
-   * Navega a la sección de nutrición/macros
-   * Icono: Cubiertos/nutrición
+   * Navega a la sección de dietas
    */
   const handleDietasClick = () => {
-    router.push('/nutricion');
+    router.push('/dietas');
   };
 
   /**
@@ -57,24 +47,17 @@ export default function HomePage() {
    * Asociado al icono del músculo en la primera sección
    */
   const handleMetasClick = () => {
-    router.push('/objetivos');
+    router.push('/metas');
   };
 
   /**
    * Navega a la sección de seguimiento diario
    * Asociado al icono del calendario en la segunda sección
    */
-  const handleProgressClick = () => {
-    router.push('/progreso');
+  const handleMacrosClick = () => {
+    router.push('/macros');
   };
 
-  /**
-   * Navega a la sección de planificación de comidas
-   * Asociado al icono de cubiertos en la tercera sección
-   */
-  const handleMealsClick = () => {
-    router.push('/comidas');
-  };
 
   // ==================== RENDERIZADO ====================
 
@@ -159,7 +142,7 @@ export default function HomePage() {
         }}>
           {/* Icono 1: Metas */}
           <div 
-            onClick={handlePaginaPrincipalClick}
+            onClick={handleMetasClick}
             style={{
               width: '35px',
               height: '35px',
@@ -194,7 +177,7 @@ export default function HomePage() {
 
           {/* Icono 2: Progreso de macros*/}
           <div 
-            onClick={handleProgresoClick}
+            onClick={handleMacrosClick}
             style={{
               width: '35px',
               height: '35px',
@@ -320,7 +303,7 @@ export default function HomePage() {
         }}>
           {/* Columna izquierda: Icono y texto */}
           <div>
-            {/* Icono de músculo - INSERTA TU IMAGEN AQUÍ */}
+            {/* Icono de metas */}
             <div 
               onClick={handleMetasClick}
               style={{
@@ -338,14 +321,14 @@ export default function HomePage() {
                 e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              {/* NOTA: Reemplaza este div con tu imagen
+              {
                   <Image 
-                    src="/images/muscle-icon.png" 
+                    src="/metas.png" 
                     alt="Objetivos" 
                     fill 
                     style={{ objectFit: 'contain' }}
                   />
-              */}
+              }
               <div style={{
                 width: '100%',
                 height: '100%',
@@ -355,10 +338,9 @@ export default function HomePage() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '48px'
-              }}>💪</div>
+              }}></div>
             </div>
 
-            {/* Título */}
             <h1 style={{
               fontSize: '36px',
               fontWeight: 'bold',
@@ -379,22 +361,17 @@ export default function HomePage() {
               fontWeight: '300'
             }}>
               Este es el objetivo donde definirás cuál será tu ideal de desarrollo 
-              físico desde el cual vas partir. Este ideal se volverá el objetivo que 
+              físico. Este ideal se volverá el objetivo que 
               lucharás por alcanzar para que tu cuerpo refleje al máximo todos los 
               sacrificios que has tomado. La plataforma junto con las herramientas a las 
               cuales puedes tener acceso, estará aquí para que puedas desafiar lo que crees 
               es imposible con tu cuerpo y demostrar que eres fuerte y decidido, 
               enfrentándote y dándote cuenta de que eres mucho más que lo que crees de 
-              ti mismo. Día a día desde tu compromiso con alimentarte con el plan que has 
-              generado donde todo está contado, cada remordimiento y cada decisión que 
-              tomes será una consola en ti para que al pasar de los días puedas sentir tu 
-              cuerpo crecer y el perfil que buscas donde todo lo que has deseado lograr 
-              hoy lo tendrás de manera física frente a tus ojos lleno de transformación 
-              en resultados reales.
+              ti mismo. 
             </p>
           </div>
 
-          {/* Columna derecha: Imagen de culturistas - INSERTA TU IMAGEN AQUÍ */}
+          {/* Columna derecha: Imagen de Metas*/}
           <div style={{
             width: '100%',
             height: '400px',
@@ -402,14 +379,15 @@ export default function HomePage() {
             borderRadius: '20px',
             overflow: 'hidden'
           }}>
-            {/* NOTA: Reemplaza este div con tu imagen
+            {
                 <Image 
-                  src="/images/bodybuilders.png" 
+                  src="/goal.png" 
                   alt="Culturistas" 
                   fill 
-                  style={{ objectFit: 'cover' }}
-                />
-            */}
+                  style={{ objectFit: 'contain' }}
+                />   
+            }
+          
             <div style={{
               width: '100%',
               height: '100%',
@@ -418,41 +396,35 @@ export default function HomePage() {
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '48px'
-            }}>🏋️</div>
+            }}></div>
           </div>
         </section>
 
         {/* ========== SECCIÓN 2: TÚ PROGRESO DÍA A DÍA ========== */}
-        {/*
-          Segunda sección con:
-          - Imagen ilustrativa a la izquierda
-          - Icono de calendario (clickeable) a la derecha
-          - Título "TÚ PROGRESO DÍA A DÍA"
-          - Texto descriptivo
-        */}
+        
         <section style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
-          gap: '40px',
+          gap: '60px',
           marginBottom: '80px',
           alignItems: 'center'
         }}>
-          {/* Columna izquierda: Imagen ilustrativa - INSERTA TU IMAGEN AQUÍ */}
+          {/* Columna izquierda */}
           <div style={{
             width: '100%',
-            height: '350px',
+            height: '370px',
             position: 'relative',
             borderRadius: '20px',
             overflow: 'hidden'
           }}>
-            {/* NOTA: Reemplaza este div con tu imagen
+            {
                 <Image 
-                  src="/images/progress-illustration.png" 
+                  src="/macros.png" 
                   alt="Progreso" 
                   fill 
                   style={{ objectFit: 'cover' }}
                 />
-            */}
+            }
             <div style={{
               width: '100%',
               height: '100%',
@@ -461,14 +433,14 @@ export default function HomePage() {
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '48px'
-            }}>📊</div>
+            }}></div>
           </div>
 
           {/* Columna derecha: Icono y texto */}
           <div>
-            {/* Icono de calendario - INSERTA TU IMAGEN AQUÍ */}
+            {/* Icono de macros */}
             <div 
-              onClick={handleProgressClick}
+              onClick={handleMacrosClick}
               style={{
                 width: '80px',
                 height: '80px',
@@ -484,14 +456,14 @@ export default function HomePage() {
                 e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              {/* NOTA: Reemplaza este div con tu imagen
+              {
                   <Image 
-                    src="/images/calendar-icon.png" 
+                    src="/progresoMacros.png" 
                     alt="Progreso Diario" 
                     fill 
                     style={{ objectFit: 'contain' }}
                   />
-              */}
+              }
               <div style={{
                 width: '100%',
                 height: '100%',
@@ -501,7 +473,7 @@ export default function HomePage() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '48px'
-              }}>📅</div>
+              }}></div>
             </div>
 
             {/* Título */}
@@ -525,25 +497,16 @@ export default function HomePage() {
               fontWeight: '300'
             }}>
               Aquí es donde tu compromiso se cristaliza en resultados reales. Registra tus 
-              comidas cada día de la semana sin fallar y rellena cada uno de tus logros 
-              para que tu decisión pase de ser comida, corte estrictas y números a algo 
-              muy especial que es un cambio con el cual darás una opinión cuando veas tu 
-              progreso y al momento cómprate cada día puedas ver e imitar aquello. Este es 
-              tu espacio para que mantengas el control de tu vida y puedas comprobar algo 
-              muy especial respecto a lo que estás haciendo al obtener peso, masa y medida 
-              y tomar la decisión completa de cumplir con tu sueño.
+              comidas cada día de la semana sin fallar y te garantizaremos tu espacio para 
+              que mantengas el control de tu vida y puedas comprobar algo muy especial 
+              respecto a lo que estás haciendo al obtener peso, masa y medida y tomar la 
+              decisión completa de cumplir con tu sueño.
             </p>
           </div>
         </section>
 
         {/* ========== SECCIÓN 3: TU COMBUSTIBLE PARA EL CAMBIO ========== */}
-        {/*
-          Tercera sección con:
-          - Icono de cubiertos (clickeable) a la izquierda
-          - Título "TU COMBUSTIBLE PARA EL CAMBIO"
-          - Texto descriptivo
-          - Grid de imágenes de comidas a la derecha (3x3)
-        */}
+      
         <section style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
@@ -553,9 +516,9 @@ export default function HomePage() {
         }}>
           {/* Columna izquierda: Icono y texto */}
           <div>
-            {/* Icono de cubiertos - INSERTA TU IMAGEN AQUÍ */}
+            {/* Icono de dietas */}
             <div 
-              onClick={handleMealsClick}
+              onClick={handleDietasClick}
               style={{
                 width: '80px',
                 height: '80px',
@@ -571,14 +534,14 @@ export default function HomePage() {
                 e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              {/* NOTA: Reemplaza este div con tu imagen
+              {
                   <Image 
-                    src="/images/cutlery-icon.png" 
+                    src="/dietas.png" 
                     alt="Comidas" 
                     fill 
                     style={{ objectFit: 'contain' }}
                   />
-              */}
+              }
               <div style={{
                 width: '100%',
                 height: '100%',
@@ -588,7 +551,7 @@ export default function HomePage() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '48px'
-              }}>🍴</div>
+              }}></div>
             </div>
 
             {/* Título */}
@@ -611,24 +574,12 @@ export default function HomePage() {
               fontFamily: "'Inter', sans-serif",
               fontWeight: '300'
             }}>
-              Esta herramienta es la que permitirá una conexión más importante. Descarga 
-              datos importantes que harán cambiar tu forma de pensar desde cual es tu 
-              macro-nutrición y también las cantidades adecuadas de comida preparadas 
-              para ayudarte a cumplir tu objetivo. Este paso será clave para tu éxito, 
-              aquí tendrás todo lo necesario para que tu cuerpo cambie y empiece a 
-              construir lo que quieres ser. Cuando más lo uses más deseo de disfrutar las 
-              comidas podrás sentir. Cada idea para alimentar tus músculos éxito sostenido 
-              el perfil de colesterol y poder formar estructura. Este programa no te 
-              privará de algo sino que tendrá el poder para permitir que tú vivas comiendo 
-              mejor y más sano.
-              <br /><br />
               No es falta de comer menos, sino de comer mejor. Aquí encontrarás cómo 
               transformar tus hábitos alimenticios en una estructura bien planeada de ayuno 
-              y de recibo. Con cada menú diseñado para tu máximo en rendimiento sostenido 
-              un perfil que se adecúe a tu objetivo. Nunca se debe sentirse como una dieta, 
+              y de recibo. Con cada recomendación diseñada para tu máximo rendimiento y 
+              un perfil que se adhiere a tu objetivo. Nunca se debe sentirse como una dieta, 
               sino como tu primera experiencia en alimentarte de forma equilibrada con 
-              nutrición. La mentoría incluida será la guía adecuada para los resultados que 
-              buscas, y podrás incluso ser creativo con nuestras indicaciones.
+              nutrición.
             </p>
           </div>
 
@@ -638,57 +589,39 @@ export default function HomePage() {
             gridTemplateColumns: 'repeat(3, 1fr)',
             gap: '15px'
           }}>
-            {/* Generar 9 placeholders para imágenes de comidas */}
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((index) => (
-              <div 
-                key={index}
-                style={{
-                  width: '100%',
-                  aspectRatio: '1',
-                  position: 'relative',
-                  borderRadius: '15px',
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s ease',
-                }}
-                onClick={handleMealsClick}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
-              >
-                {/* NOTA: Reemplaza estos divs con tus imágenes de comidas
-                    <Image 
-                      src={`/images/meal-${index}.jpg`} 
-                      alt={`Comida ${index}`} 
-                      fill 
-                      style={{ objectFit: 'cover' }}
-                    />
-                */}
-                <div style={{
-                  width: '100%',
-                  height: '100%',
-                  backgroundColor: '#1a1a1a',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '32px'
-                }}>🍱</div>
-              </div>
-            ))}
+            {/* Columna derecha: Imagen de Dietas */}
+          <div style={{
+            width: '380px',
+            height: '400px',
+            position: 'relative',
+            borderRadius: '20px',
+            overflow: 'hidden'
+          }}>
+            {
+                <Image 
+                  src="/dietas2.png" 
+                  alt="Dietas" 
+                  fill 
+                  style={{ objectFit: 'contain' }}
+                />   
+            }
+
+            <div style={{
+              width: '100%',
+              height: '100%',
+              backgroundColor: '#1a1a1a',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '48px'
+            }}></div>
+          </div>
           </div>
         </section>
       </main>
 
       {/* ========== FOOTER ========== */}
-      {/*
-        Footer con:
-        - Copyright y texto legal
-        - Enlaces a redes sociales
-        - Enlaces a términos y condiciones
-      */}
+  
       <footer style={{
         backgroundColor: '#1a1a1a',
         padding: '40px 40px 30px',
@@ -722,7 +655,6 @@ export default function HomePage() {
             flexWrap: 'wrap'
           }}>
             <a 
-              href="/contacto" 
               style={{
                 fontSize: '12px',
                 color: '#4a9eff',
@@ -737,10 +669,9 @@ export default function HomePage() {
                 e.currentTarget.style.color = '#4a9eff';
               }}
             >
-              📧 Contacto: contact@macromate.com
+              📧 Contacto: 13763596@murciaeduca.es
             </a>
             <a 
-              href="tel:+34123456789" 
               style={{
                 fontSize: '12px',
                 color: '#4a9eff',
@@ -755,89 +686,9 @@ export default function HomePage() {
                 e.currentTarget.style.color = '#4a9eff';
               }}
             >
-              📞 Tel: +34 123 456 789
+              📞 Tel: +34 622 81 062
             </a>
-            <a 
-              href="https://instagram.com/macromate" 
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                fontSize: '12px',
-                color: '#4a9eff',
-                textDecoration: 'none',
-                fontFamily: "'Inter', sans-serif",
-                transition: 'color 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#6bb3ff';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#4a9eff';
-              }}
-            >
-              📱 Instagram
-            </a>
-          </div>
-
-          {/* Enlaces legales */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '20px',
-            fontSize: '11px',
-            color: '#666',
-            fontFamily: "'Inter', sans-serif"
-          }}>
-            <a 
-              href="/terminos" 
-              style={{
-                color: '#666',
-                textDecoration: 'none',
-                transition: 'color 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#4a9eff';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#666';
-              }}
-            >
-              Términos de Servicio
-            </a>
-            <span>|</span>
-            <a 
-              href="/privacidad" 
-              style={{
-                color: '#666',
-                textDecoration: 'none',
-                transition: 'color 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#4a9eff';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#666';
-              }}
-            >
-              Privacidad
-            </a>
-            <span>|</span>
-            <a 
-              href="/aviso-legal" 
-              style={{
-                color: '#666',
-                textDecoration: 'none',
-                transition: 'color 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#4a9eff';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#666';
-              }}
-            >
-              Aviso Legal 
-            </a>
+            
           </div>
         </div>
       </footer>
