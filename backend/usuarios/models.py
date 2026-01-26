@@ -92,38 +92,40 @@ class Perfil(models.Model):
     class Meta:
         db_table = 'perfiles'
 
-def calcular_edad(self):
-    if not self.fecha_nacimiento:
-        return None
-    today = date.today()
-    return today.year - self.fecha_nacimiento.year - ((today.month, today.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day))
+    def calcular_edad(self):
+        if not self.fecha_nacimiento:
+            return None
+        today = date.today()
+        return today.year - self.fecha_nacimiento.year - ((today.month, today.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day))
 
-def calcular_bmr(self):
-    if not all([self.peso_actual, self.altura, self.fecha_nacimiento, self.genero]):
-        return None
-    edad = self.calcular_edad()
-    if self.genero == 'masculino':
-        bmr = 10 * float(self.peso_actual) + 6.25 * float(self.altura) - 5 * edad + 5
-    else:
-        bmr = 10 * float(self.peso_actual) + 6.25 * float(self.altura) - 5 * edad - 161
-    return bmr
+    def calcular_bmr(self):
+        if not all([self.peso_actual, self.altura, self.fecha_nacimiento, self.genero]):
+            return None
+        edad = self.calcular_edad()
+        if self.genero == 'masculino':
+            bmr = 10 * float(self.peso_actual) + 6.25 * float(self.altura) - 5 * edad + 5
+        else:
+            bmr = 10 * float(self.peso_actual) + 6.25 * float(self.altura) - 5 * edad - 161
+        return bmr
 
-def factor_actividad(self):
-    factores = {
-        'sedentario': 1.2,
-        'ligero': 1.375,
-        'moderado': 1.55,
-        'activo': 1.725,
-        'muy_activo': 1.9,
-    }
-    return factores.get(self.nivel_actividad, 1.2)
+    def factor_actividad(self):
+        factores = {
+            'sedentario': 1.2,
+            'ligero': 1.375,
+            'moderado': 1.55,
+            'activo': 1.725,
+            'muy_activo': 1.9,
+        }
+        return factores.get(self.nivel_actividad, 1.2)
 
-def save(self, *args, **kwargs):
-    bmr_calculado = self.calcular_bmr()
-    if bmr_calculado:
-        self.bmr = Decimal(round(bmr_calculado, 2))
-        self.tdee = Decimal(round(bmr_calculado * self.factor_actividad(), 2))
-    super().save(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        bmr_calculado = self.calcular_bmr()
+        if bmr_calculado:
+            self.bmr = Decimal(str(round(bmr_calculado, 2)))
+            tdee_calculado = bmr_calculado * self.factor_actividad()
+            self.tdee = Decimal(str(round(tdee_calculado, 2)))
+        super().save(*args, **kwargs)
 
 class MedidaCorporal(models.Model):
     id_perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE)

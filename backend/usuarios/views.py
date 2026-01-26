@@ -1,4 +1,3 @@
-from httpx import request
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -7,7 +6,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from rest_framework import status
 from django.db import transaction
 
 from .models import Usuario, Perfil
@@ -130,4 +128,4 @@ def logout_usuario(request):
             token.blacklist()
         return Response({'message': 'Sesión cerrada exitosamente'}, status=status.HTTP_205_RESET_CONTENT)
     except Exception as e:
-        return Response({'error': 'Token inválido o expirado'}, status=status.HTTP_400_BAD_REQUEST)             
+        return Response({'error': 'Token inválido o expirado'}, status=status.HTTP_400_BAD_REQUEST)
