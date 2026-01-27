@@ -98,10 +98,12 @@ class Perfil(models.Model):
         today = date.today()
         return today.year - self.fecha_nacimiento.year - ((today.month, today.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day))
 
+
     def calcular_bmr(self):
-        if not all([self.peso_actual, self.altura, self.fecha_nacimiento, self.genero]):
-            return None
         edad = self.calcular_edad()
+        if edad is None or not all([self.peso_actual, self.altura, self.genero]):
+            return None
+            
         if self.genero == 'masculino':
             bmr = 10 * float(self.peso_actual) + 6.25 * float(self.altura) - 5 * edad + 5
         else:
