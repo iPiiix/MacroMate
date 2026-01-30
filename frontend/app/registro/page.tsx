@@ -324,7 +324,7 @@ export default function RegistroPage() {
       // Esperar 2 segundos antes de redirigir para que el usuario
       // vea el mensaje de éxito
       setTimeout(() => {
-        router.push('/dashboard');
+        router.push('/login');
       }, 2000);
 
     } catch (error) {
