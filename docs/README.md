@@ -147,14 +147,9 @@ Para acceder al panel de administración de Django:
 
 1. **URL**: `http://localhost:8000/admin`
 2. **Credenciales**: 
-   - Usuario: `admin` (o el superusuario que hayas creado)
-   - Contraseña: [la contraseña que estableciste]
+   - Usuario: (el superusuario que hayas creado)
+   - Contraseña: (la contraseña que se estableció)
 
-#### Crear un Superusuario (si no existe)
-```bash
-cd backend  # o el nombre de tu carpeta Django
-python manage.py createsuperuser
-```
 ---
 
 ## Objetivo Académico
