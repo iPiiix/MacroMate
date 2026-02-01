@@ -10,7 +10,6 @@ import Image from 'next/image';
  * - Header con navegación a diferentes secciones
  * - Sección hero con mensaje motivacional
  * - Sección de seguimiento de progreso
- * - Sección de planificación de comidas
  * - Footer con información y enlaces
  * 
  * Diseño: Fondo oscuro (#2b2b2b) con secciones destacadas
@@ -20,44 +19,21 @@ export default function HomePage() {
 
   // ==================== MANEJADORES DE NAVEGACIÓN ====================
 
-  /**
-   * Navega a la página de inicio
-   */
   const handlePaginaPrincipalClick = () => {
     router.push('/paginaPrincipal');
   };
 
-  /**
-   * Navega a la sección de dietas
-   */
-  const handleDietasClick = () => {
-    router.push('/dietas');
-  };
-
-  /**
-   * Navega al perfil del usuario
-   * Icono: Usuario/perfil
-   */
   const handlePerfilClick = () => {
     router.push('/perfil');
   };
 
-  /**
-   * Navega a la sección de objetivos/metas
-   * Asociado al icono del músculo en la primera sección
-   */
   const handleMetasClick = () => {
     router.push('/metas');
   };
 
-  /**
-   * Navega a la sección de seguimiento diario
-   * Asociado al icono del calendario en la segunda sección
-   */
   const handleMacrosClick = () => {
     router.push('/macros');
   };
-
 
   // ==================== RENDERIZADO ====================
 
@@ -69,12 +45,6 @@ export default function HomePage() {
       color: '#ffffff'
     }}>
       {/* ========== HEADER CON NAVEGACIÓN ========== */}
-      {/*
-        Header fijo con logo y 4 iconos de navegación
-        - Logo MacroMate (izquierda)
-        - 4 iconos de navegación (derecha)
-        Todos los iconos son clickeables y redirigen a su página correspondiente
-      */}
       <header style={{
         backgroundColor: '#222222ff',
         padding: '15px 30px',
@@ -86,7 +56,7 @@ export default function HomePage() {
         top: 0,
         zIndex: 1000
       }}>
-        {/* Logo MacroMate - Clickeable para volver al inicio */}
+        {/* Logo MacroMate */}
         <div 
           onClick={handlePaginaPrincipalClick}
           style={{ 
@@ -109,7 +79,6 @@ export default function HomePage() {
             color: '#000000ff',
             letterSpacing: '1px',
             textShadow: '1px 1px 2px #33A6DF'
-
           }}>
             ACRO
           </span>
@@ -130,8 +99,6 @@ export default function HomePage() {
           }}>
             ATE
           </span>
-          
-          
         </div>
 
         {/* Iconos de navegación */}
@@ -150,7 +117,6 @@ export default function HomePage() {
               cursor: 'pointer',
               transition: 'transform 0.2s ease',
             }}
-            //Animaciones
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.1)';
             }}
@@ -158,7 +124,6 @@ export default function HomePage() {
               e.currentTarget.style.transform = 'scale(1)';
             }}
           >
-          
             <div style={{
               width: '100%',
               height: '100%',
@@ -168,14 +133,16 @@ export default function HomePage() {
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '20px'
-            }}><Image 
-                  src="/metas.png" 
-                  alt="Inicio" 
-                  fill 
-                /></div>
+            }}>
+              <Image 
+                src="/metas.png" 
+                alt="Inicio" 
+                fill 
+              />
+            </div>
           </div>
 
-          {/* Icono 2: Progreso de macros*/}
+          {/* Icono 2: Progreso de macros */}
           <div 
             onClick={handleMacrosClick}
             style={{
@@ -192,7 +159,6 @@ export default function HomePage() {
               e.currentTarget.style.transform = 'scale(1)';
             }}
           >
-           
             <div style={{
               width: '100%',
               height: '100%',
@@ -204,50 +170,14 @@ export default function HomePage() {
               fontSize: '20px'
             }}>
               <Image 
-                  src="/progresoMacros.png" 
-                  alt="Recetas" 
-                  fill 
-                />
+                src="/progresoMacros.png" 
+                alt="Recetas" 
+                fill 
+              />
             </div>
           </div>
 
-          {/* Icono 3: Nutrición*/}
-          <div 
-            onClick={handleDietasClick}
-            style={{
-              width: '35px',
-              height: '35px',
-              position: 'relative',
-              cursor: 'pointer',
-              transition: 'transform 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-          >
-           
-            <div style={{
-              width: '100%',
-              height: '100%',
-              backgroundColor: '#33A6DF',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '20px'
-            }}>
-              <Image 
-                  src="/dietas.png" 
-                  alt="Nutrición" 
-                  fill 
-                />
-            </div>
-          </div>
-
-          {/* Icono 4: Perfil*/}
+          {/* Icono 3: Perfil */}
           <div 
             onClick={handlePerfilClick}
             style={{
@@ -264,7 +194,6 @@ export default function HomePage() {
               e.currentTarget.style.transform = 'scale(1)';
             }}
           >
-          
             <div style={{
               width: '100%',
               height: '100%',
@@ -277,10 +206,10 @@ export default function HomePage() {
               overflow: 'hidden',    
             }}>
               <Image 
-                  src="/perfil.png" 
-                  alt="Perfil" 
-                  fill 
-                />
+                src="/perfil.png" 
+                alt="Perfil" 
+                fill 
+              />
             </div>
           </div>
         </div>
@@ -293,7 +222,6 @@ export default function HomePage() {
         margin: '0 auto'
       }}>
         {/* ========== SECCIÓN 1: METAS ========== */}
-      
         <section style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
@@ -303,7 +231,6 @@ export default function HomePage() {
         }}>
           {/* Columna izquierda: Icono y texto */}
           <div>
-            {/* Icono de metas */}
             <div 
               onClick={handleMetasClick}
               style={{
@@ -321,14 +248,12 @@ export default function HomePage() {
                 e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              {
-                  <Image 
-                    src="/metas.png" 
-                    alt="Objetivos" 
-                    fill 
-                    style={{ objectFit: 'contain' }}
-                  />
-              }
+              <Image 
+                src="/metas.png" 
+                alt="Objetivos" 
+                fill 
+                style={{ objectFit: 'contain' }}
+              />
               <div style={{
                 width: '100%',
                 height: '100%',
@@ -352,7 +277,6 @@ export default function HomePage() {
               LA META LA PONES TÚ...
             </h1>
 
-            {/* Texto descriptivo */}
             <p style={{
               fontSize: '15px',
               color: '#cccccc',
@@ -371,7 +295,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Columna derecha: Imagen de Metas*/}
+          {/* Columna derecha: Imagen de Metas */}
           <div style={{
             width: '100%',
             height: '400px',
@@ -379,15 +303,12 @@ export default function HomePage() {
             borderRadius: '20px',
             overflow: 'hidden'
           }}>
-            {
-                <Image 
-                  src="/goal.png" 
-                  alt="Culturistas" 
-                  fill 
-                  style={{ objectFit: 'contain' }}
-                />   
-            }
-          
+            <Image 
+              src="/goal.png" 
+              alt="Culturistas" 
+              fill 
+              style={{ objectFit: 'contain' }}
+            />   
             <div style={{
               width: '100%',
               height: '100%',
@@ -401,15 +322,14 @@ export default function HomePage() {
         </section>
 
         {/* ========== SECCIÓN 2: TÚ PROGRESO DÍA A DÍA ========== */}
-        
         <section style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: '60px',
-          marginBottom: '80px',
+          marginBottom: '60px',
           alignItems: 'center'
         }}>
-          {/* Columna izquierda */}
+          {/* Columna izquierda: Imagen */}
           <div style={{
             width: '100%',
             height: '370px',
@@ -417,14 +337,12 @@ export default function HomePage() {
             borderRadius: '20px',
             overflow: 'hidden'
           }}>
-            {
-                <Image 
-                  src="/macros.png" 
-                  alt="Progreso" 
-                  fill 
-                  style={{ objectFit: 'cover' }}
-                />
-            }
+            <Image 
+              src="/macros.png" 
+              alt="Progreso" 
+              fill 
+              style={{ objectFit: 'cover' }}
+            />
             <div style={{
               width: '100%',
               height: '100%',
@@ -438,7 +356,6 @@ export default function HomePage() {
 
           {/* Columna derecha: Icono y texto */}
           <div>
-            {/* Icono de macros */}
             <div 
               onClick={handleMacrosClick}
               style={{
@@ -456,14 +373,12 @@ export default function HomePage() {
                 e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              {
-                  <Image 
-                    src="/progresoMacros.png" 
-                    alt="Progreso Diario" 
-                    fill 
-                    style={{ objectFit: 'contain' }}
-                  />
-              }
+              <Image 
+                src="/progresoMacros.png" 
+                alt="Progreso Diario" 
+                fill 
+                style={{ objectFit: 'contain' }}
+              />
               <div style={{
                 width: '100%',
                 height: '100%',
@@ -476,7 +391,6 @@ export default function HomePage() {
               }}></div>
             </div>
 
-            {/* Título */}
             <h2 style={{
               fontSize: '36px',
               fontWeight: 'bold',
@@ -488,7 +402,6 @@ export default function HomePage() {
               TÚ PROGRESO DÍA A DÍA
             </h2>
 
-            {/* Texto descriptivo */}
             <p style={{
               fontSize: '15px',
               color: '#cccccc',
@@ -504,124 +417,9 @@ export default function HomePage() {
             </p>
           </div>
         </section>
-
-        {/* ========== SECCIÓN 3: TU COMBUSTIBLE PARA EL CAMBIO ========== */}
-      
-        <section style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '40px',
-          marginBottom: '60px',
-          alignItems: 'center'
-        }}>
-          {/* Columna izquierda: Icono y texto */}
-          <div>
-            {/* Icono de dietas */}
-            <div 
-              onClick={handleDietasClick}
-              style={{
-                width: '80px',
-                height: '80px',
-                position: 'relative',
-                marginBottom: '30px',
-                cursor: 'pointer',
-                transition: 'transform 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
-            >
-              {
-                  <Image 
-                    src="/dietas.png" 
-                    alt="Comidas" 
-                    fill 
-                    style={{ objectFit: 'contain' }}
-                  />
-              }
-              <div style={{
-                width: '100%',
-                height: '100%',
-                backgroundColor: '#4a9eff',
-                borderRadius: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '48px'
-              }}></div>
-            </div>
-
-            {/* Título */}
-            <h2 style={{
-              fontSize: '36px',
-              fontWeight: 'bold',
-              color: '#ffffff',
-              marginBottom: '20px',
-              lineHeight: '1.2',
-              letterSpacing: '1px'
-            }}>
-              TU COMBUSTIBLE PARA EL CAMBIO
-            </h2>
-
-            {/* Texto descriptivo */}
-            <p style={{
-              fontSize: '15px',
-              color: '#cccccc',
-              lineHeight: '1.8',
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: '300'
-            }}>
-              No es falta de comer menos, sino de comer mejor. Aquí encontrarás cómo 
-              transformar tus hábitos alimenticios en una estructura bien planeada de ayuno 
-              y de recibo. Con cada recomendación diseñada para tu máximo rendimiento y 
-              un perfil que se adhiere a tu objetivo. Nunca se debe sentirse como una dieta, 
-              sino como tu primera experiencia en alimentarte de forma equilibrada con 
-              nutrición.
-            </p>
-          </div>
-
-          {/* Columna derecha: Grid de imágenes de comidas (3x3) */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '15px'
-          }}>
-            {/* Columna derecha: Imagen de Dietas */}
-          <div style={{
-            width: '380px',
-            height: '400px',
-            position: 'relative',
-            borderRadius: '20px',
-            overflow: 'hidden'
-          }}>
-            {
-                <Image 
-                  src="/dietas2.png" 
-                  alt="Dietas" 
-                  fill 
-                  style={{ objectFit: 'contain' }}
-                />   
-            }
-
-            <div style={{
-              width: '100%',
-              height: '100%',
-              backgroundColor: '#1a1a1a',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '48px'
-            }}></div>
-          </div>
-          </div>
-        </section>
       </main>
 
       {/* ========== FOOTER ========== */}
-  
       <footer style={{
         backgroundColor: '#1a1a1a',
         padding: '40px 40px 30px',
@@ -632,7 +430,6 @@ export default function HomePage() {
           margin: '0 auto',
           textAlign: 'center'
         }}>
-          {/* Copyright y texto legal */}
           <p style={{
             fontSize: '12px',
             color: '#888',
@@ -646,7 +443,6 @@ export default function HomePage() {
             en el uso que le dar y que esto no sustituya la atención médica de un profesional.
           </p>
 
-          {/* Enlaces */}
           <div style={{
             display: 'flex',
             justifyContent: 'center',
@@ -688,7 +484,6 @@ export default function HomePage() {
             >
               📞 Tel: +34 622 81 062
             </a>
-            
           </div>
         </div>
       </footer>

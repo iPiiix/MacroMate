@@ -54,7 +54,6 @@ export default function MacrosPage() {
     grasas: 70
   });
   
-  // CORRECCIÓN: Inicializar con valores numéricos, no strings
   const [macroProgress, setMacroProgress] = useState<MacroProgress>({
     calorias: 0,
     proteinas: 0,
@@ -65,7 +64,6 @@ export default function MacrosPage() {
   const [showAddFoodModal, setShowAddFoodModal] = useState(false);
   const [loading, setLoading] = useState(true);
   
-  // Estados del formulario de añadir comida
   const [foodData, setFoodData] = useState({
     nombre: '',
     calorias: '',
@@ -170,7 +168,6 @@ export default function MacrosPage() {
         const profile = await response.json();
         setUserProfile(profile);
 
-        // CALCULAR OBJETIVOS DE MACROS
         const bmr = calculateBMR(profile);
         console.log('BMR calculado:', bmr);
         
@@ -185,13 +182,10 @@ export default function MacrosPage() {
         
         setMacroGoals(macros);
 
-        // CORRECCIÓN: Cargar progreso del día desde localStorage o backend
-        // Por ahora, intentar cargar desde localStorage
         const savedProgress = localStorage.getItem('macroProgress');
         if (savedProgress) {
           try {
             const parsedProgress = JSON.parse(savedProgress);
-            // IMPORTANTE: Asegurar que todos los valores sean números
             setMacroProgress({
               calorias: Number(parsedProgress.calorias) || 0,
               proteinas: Number(parsedProgress.proteinas) || 0,
@@ -200,7 +194,6 @@ export default function MacrosPage() {
             });
           } catch (e) {
             console.error('Error al parsear progreso guardado:', e);
-            // Si hay error, empezar con valores en 0
             setMacroProgress({
               calorias: 0,
               proteinas: 0,
@@ -236,10 +229,6 @@ export default function MacrosPage() {
     router.push('/macros');
   };
 
-  const handleDietasClick = () => {
-    router.push('/dietas');
-  };
-
   const handlePerfilClick = () => {
     router.push('/perfil');
   };
@@ -253,39 +242,28 @@ export default function MacrosPage() {
     });
   };
 
-  /**
-   * CORRECCIÓN PRINCIPAL: Añade una comida al progreso diario
-   * Ahora convierte correctamente los strings a números y suma en lugar de concatenar
-   */
   const handleAddFood = () => {
-    // Validar que todos los campos estén completos
     if (!foodData.nombre || !foodData.calorias || !foodData.proteinas || 
         !foodData.carbohidratos || !foodData.grasas) {
       toast.error('Por favor completa todos los campos');
       return;
     }
 
-    // CORRECCIÓN: Usar Number() en lugar de parseFloat para mejor manejo
-    // Number() convierte strings vacíos a 0, mientras parseFloat puede dar NaN
     const newCalorias = Number(foodData.calorias);
     const newProteinas = Number(foodData.proteinas);
     const newCarbohidratos = Number(foodData.carbohidratos);
     const newGrasas = Number(foodData.grasas);
 
-    // Validar que los valores sean números válidos
     if (isNaN(newCalorias) || isNaN(newProteinas) || isNaN(newCarbohidratos) || isNaN(newGrasas)) {
       toast.error('Por favor ingresa valores numéricos válidos');
       return;
     }
 
-    // Validar que los valores sean positivos
     if (newCalorias < 0 || newProteinas < 0 || newCarbohidratos < 0 || newGrasas < 0) {
       toast.error('Los valores deben ser positivos');
       return;
     }
 
-    // CORRECCIÓN: Asegurar que la suma se haga con números, no strings
-    // Usar Number() explícito para garantizar operaciones numéricas
     setMacroProgress(prev => {
       const newProgress = {
         calorias: Number(prev.calorias) + newCalorias,
@@ -294,17 +272,14 @@ export default function MacrosPage() {
         grasas: Number(prev.grasas) + newGrasas
       };
       
-      // Guardar en localStorage para persistencia
       localStorage.setItem('macroProgress', JSON.stringify(newProgress));
-      
-      console.log('Nuevo progreso:', newProgress); // Para debugging
+      console.log('Nuevo progreso:', newProgress);
       
       return newProgress;
     });
 
     toast.success(`${foodData.nombre} añadido correctamente`);
     
-    // Limpiar formulario y cerrar modal
     setFoodData({
       nombre: '',
       calorias: '',
@@ -317,10 +292,6 @@ export default function MacrosPage() {
 
   // ==================== FUNCIÓN PARA RESETEAR PROGRESO ====================
   
-  /**
-   * Nueva función para resetear el progreso del día
-   * Útil para comenzar un nuevo día
-   */
   const handleResetProgress = () => {
     if (confirm('¿Estás seguro de que quieres resetear el progreso del día?')) {
       setMacroProgress({
@@ -336,20 +307,14 @@ export default function MacrosPage() {
 
   // ==================== CÁLCULO DE PORCENTAJES ====================
 
-  /**
-   * Calcula el porcentaje de progreso para cada macro
-   * CORRECCIÓN: Asegurar que ambos valores sean números
-   */
   const getProgressPercentage = (current: number, goal: number): number => {
-    // Convertir explícitamente a números para evitar problemas
     const currentNum = Number(current);
     const goalNum = Number(goal);
     
-    // Evitar división por cero
     if (goalNum === 0) return 0;
     
     const percentage = (currentNum / goalNum) * 100;
-    return Math.min(Math.max(percentage, 0), 100); // Entre 0 y 100
+    return Math.min(Math.max(percentage, 0), 100);
   };
 
   // ==================== RENDERIZADO ====================
@@ -451,12 +416,6 @@ export default function MacrosPage() {
             </div>
           </div>
 
-          <div onClick={handleDietasClick} style={iconContainerStyle}>
-            <div style={iconBoxStyle}>
-              <Image src="/dietas.png" alt="Dietas" fill />
-            </div>
-          </div>
-
           <div onClick={handlePerfilClick} style={iconContainerStyle}>
             <div style={iconBoxStyle}>
               <Image src="/perfil.png" alt="Perfil" fill />
@@ -489,7 +448,6 @@ export default function MacrosPage() {
           </h1>
 
           <div style={{ display: 'flex', gap: '15px' }}>
-            {/* Botón para resetear progreso */}
             <button
               onClick={handleResetProgress}
               style={{
@@ -518,7 +476,6 @@ export default function MacrosPage() {
               RESETEAR
             </button>
 
-            {/* Botón para añadir comida */}
             <button
               onClick={() => setShowAddFoodModal(true)}
               style={{
@@ -559,7 +516,6 @@ export default function MacrosPage() {
           }}>
             <span style={macroLabelStyle}>CALORÍAS:</span>
             <span style={macroValueStyle}>
-              {/* CORRECCIÓN: Asegurar que se muestren como números enteros */}
               {Math.round(Number(macroProgress.calorias))}/{macroGoals.calorias} KCAL
             </span>
           </div>

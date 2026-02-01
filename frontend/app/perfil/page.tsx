@@ -7,14 +7,6 @@ import toast from 'react-hot-toast';
 
 /**
  * PerfilPage - Página de visualización del perfil del usuario
- * 
- * Esta página muestra:
- * 1. Información personal (nombre, apellidos, email, fecha de nacimiento)
- * 2. Datos físicos (altura, peso)
- * 3. Información de la cuenta (miembro desde, nivel de actividad, objetivo actual)
- * 4. Datos calculados (BMR y TDEE)
- * 
- * Los campos son de solo lectura ya que muestran la información del usuario
  */
 
 interface UserProfile {
@@ -39,12 +31,10 @@ export default function PerfilPage() {
   const [loading, setLoading] = useState(true);
   const [bmr, setBmr] = useState<number>(0);
   const [tdee, setTdee] = useState<number>(0);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   // ==================== CÁLCULO DE BMR ====================
   
-  /**
-   * Calcula la Tasa Metabólica Basal usando la fórmula de Mifflin-St Jeor
-   */
   const calculateBMR = (profile: UserProfile): number => {
     const edad = new Date().getFullYear() - new Date(profile.fecha_nacimiento).getFullYear();
     
@@ -57,9 +47,6 @@ export default function PerfilPage() {
 
   // ==================== CÁLCULO DE TDEE ====================
   
-  /**
-   * Calcula el Total Daily Energy Expenditure
-   */
   const calculateTDEE = (bmr: number, nivelActividad: string): number => {
     const factoresActividad: Record<string, number> = {
       'sedentario': 1.2,
@@ -85,7 +72,6 @@ export default function PerfilPage() {
           return;
         }
 
-        // Obtener perfil del usuario
         const response = await fetch('http://localhost:8000/api/usuarios/perfil/', {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -99,7 +85,6 @@ export default function PerfilPage() {
         const profile = await response.json();
         setUserProfile(profile);
 
-        // Calcular BMR y TDEE
         const calculatedBMR = calculateBMR(profile);
         const calculatedTDEE = calculateTDEE(calculatedBMR, profile.nivel_actividad);
         
@@ -132,19 +117,73 @@ export default function PerfilPage() {
     router.push('/macros');
   };
 
-  const handleDietasClick = () => {
-    router.push('/dietas');
-  };
-
   const handlePerfilClick = () => {
     router.push('/perfil');
   };
 
+  // ==================== CERRAR SESIÓN ====================
+  /**
+   * handleLogout
+   * 
+   * El backend usa SimpleJWT con token_blacklist.
+   * El endpoint POST /api/usuarios/logout/ espera { refresh: "<refresh_token>" }
+   * y blacklistea ese refresh_token en la BD para que no pueda reusarse.
+   * 
+   * Flujo:
+   *  1. POST al endpoint con el refresh_token en el body
+   *  2. Si el backend responde OK → token inválido en el servidor
+   *  3. Independientemente del resultado, limpiar localStorage
+   *     (si el backend falla por red, los tokens ya no son útiles localmente)
+   *  4. Toast de confirmación → redirigir a /login
+   */
+  const handleLogout = async () => {
+    setLoggingOut(true);
+
+    try {
+      const accessToken  = localStorage.getItem('access_token');
+      const refreshToken = localStorage.getItem('refresh_token');
+
+      if (refreshToken) {
+        await fetch('http://localhost:8000/api/usuarios/logout/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({ refresh: refreshToken })
+        });
+        // No se checkea el status: si el blacklist falla, igual cerramos sesión localmente
+      }
+
+      // Limpiar todo del cliente
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('macroProgress');
+
+      toast.success('Sesión cerrada correctamente');
+
+      // Pausa corta para que el toast se vea antes de navegar
+      setTimeout(() => {
+        router.push('/login');
+      }, 900);
+
+    } catch (error) {
+      // Error de red → igual cerramos sesión localmente
+      console.error('Error al cerrar sesión:', error);
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('macroProgress');
+      toast.success('Sesión cerrada correctamente');
+      setTimeout(() => {
+        router.push('/login');
+      }, 900);
+    } finally {
+      setLoggingOut(false);
+    }
+  };
+
   // ==================== FUNCIONES DE FORMATO ====================
 
-  /**
-   * Formatea la fecha de nacimiento a formato legible
-   */
   const formatFechaNacimiento = (fecha: string): string => {
     const date = new Date(fecha);
     return date.toLocaleDateString('es-ES', { 
@@ -154,11 +193,8 @@ export default function PerfilPage() {
     });
   };
 
-  /**
-   * Formatea la fecha de creación de cuenta
-   */
   const formatFechaCreacion = (fecha?: string): string => {
-    if (!fecha) return 'Enero 2025'; // Valor por defecto
+    if (!fecha) return 'Enero 2025';
     const date = new Date(fecha);
     return date.toLocaleDateString('es-ES', { 
       month: 'long', 
@@ -166,9 +202,6 @@ export default function PerfilPage() {
     });
   };
 
-  /**
-   * Convierte el nivel de actividad a formato legible
-   */
   const formatNivelActividad = (nivel: string): string => {
     const niveles: Record<string, string> = {
       'sedentario': 'Sedentario',
@@ -180,9 +213,6 @@ export default function PerfilPage() {
     return niveles[nivel] || nivel;
   };
 
-  /**
-   * Convierte el objetivo a formato legible
-   */
   const formatObjetivo = (objetivo: string): string => {
     const objetivos: Record<string, string> = {
       'perdida_peso': 'Perder Peso',
@@ -310,12 +340,6 @@ export default function PerfilPage() {
             </div>
           </div>
 
-          <div onClick={handleDietasClick} style={iconContainerStyle}>
-            <div style={iconBoxStyle}>
-              <Image src="/dietas.png" alt="Dietas" fill />
-            </div>
-          </div>
-
           <div onClick={handlePerfilClick} style={iconContainerStyle}>
             <div style={iconBoxStyle}>
               <Image src="/perfil.png" alt="Perfil" fill />
@@ -357,7 +381,6 @@ export default function PerfilPage() {
           }}>
             {/* ========== COLUMNA IZQUIERDA ========== */}
             <div>
-              {/* Nombre */}
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>NOMBRE:</label>
                 <div style={inputReadOnlyStyle}>
@@ -365,7 +388,6 @@ export default function PerfilPage() {
                 </div>
               </div>
 
-              {/* Apellidos */}
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>APELLIDO:</label>
                 <div style={inputReadOnlyStyle}>
@@ -373,7 +395,6 @@ export default function PerfilPage() {
                 </div>
               </div>
 
-              {/* Email */}
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>EMAIL:</label>
                 <div style={inputReadOnlyStyle}>
@@ -381,7 +402,6 @@ export default function PerfilPage() {
                 </div>
               </div>
 
-              {/* Fecha de nacimiento */}
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>FECHA DE NACIMIENTO:</label>
                 <div style={inputReadOnlyStyle}>
@@ -389,7 +409,6 @@ export default function PerfilPage() {
                 </div>
               </div>
 
-              {/* Altura */}
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>ALTURA:</label>
                 <div style={inputReadOnlyStyle}>
@@ -397,7 +416,6 @@ export default function PerfilPage() {
                 </div>
               </div>
 
-              {/* Peso */}
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>PESO:</label>
                 <div style={inputReadOnlyStyle}>
@@ -408,8 +426,6 @@ export default function PerfilPage() {
 
             {/* ========== COLUMNA DERECHA ========== */}
             <div>
-
-              {/* Miembro desde */}
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>MIEMBRO DESDE:</label>
                 <div style={inputReadOnlyStyle}>
@@ -417,7 +433,6 @@ export default function PerfilPage() {
                 </div>
               </div>
 
-              {/* Nivel de actividad */}
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>NIVEL DE ACTIVIDAD:</label>
                 <div style={inputReadOnlyStyle}>
@@ -425,7 +440,6 @@ export default function PerfilPage() {
                 </div>
               </div>
 
-              {/* Objetivo actual */}
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>OBJETIVO ACTUAL:</label>
                 <div style={inputReadOnlyStyle}>
@@ -433,7 +447,6 @@ export default function PerfilPage() {
                 </div>
               </div>
 
-              {/* BMR */}
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>BMR (Metabolismo Basal):</label>
                 <div style={inputReadOnlyStyle}>
@@ -441,7 +454,6 @@ export default function PerfilPage() {
                 </div>
               </div>
 
-              {/* TDEE */}
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>TDEE (Gasto Total Diario):</label>
                 <div style={inputReadOnlyStyle}>
@@ -450,6 +462,64 @@ export default function PerfilPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* ========== BOTÓN CERRAR SESIÓN ========== */}
+        <div style={{
+          marginTop: '45px',
+          display: 'flex',
+          justifyContent: 'center'
+        }}>
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            style={{
+              backgroundColor: loggingOut ? '#922b21' : '#e74c3c',
+              color: '#ffffff',
+              padding: '18px 56px',
+              borderRadius: '16px',
+              border: 'none',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              cursor: loggingOut ? 'not-allowed' : 'pointer',
+              letterSpacing: '2px',
+              textTransform: 'uppercase' as const,
+              fontFamily: "'Bungee', sans-serif",
+              opacity: loggingOut ? 0.65 : 1,
+              boxShadow: loggingOut
+                ? 'none'
+                : '0 4px 15px rgba(231, 76, 60, 0.45)',
+              transition: 'background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (!loggingOut) {
+                e.currentTarget.style.backgroundColor = '#c0392b';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(231, 76, 60, 0.55)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!loggingOut) {
+                e.currentTarget.style.backgroundColor = '#e74c3c';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(231, 76, 60, 0.45)';
+              }
+            }}
+            onMouseDown={(e) => {
+              if (!loggingOut) {
+                e.currentTarget.style.transform = 'translateY(0px)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(231, 76, 60, 0.35)';
+              }
+            }}
+            onMouseUp={(e) => {
+              if (!loggingOut) {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(231, 76, 60, 0.55)';
+              }
+            }}
+          >
+            {loggingOut ? 'CERRANDO...' : 'CERRAR SESIÓN'}
+          </button>
         </div>
       </main>
     </div>

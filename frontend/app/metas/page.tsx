@@ -7,51 +7,19 @@ import toast from 'react-hot-toast';
 
 /**
  * MetasPage - Página de selección y cambio de meta física
- * 
- * Esta página permite al usuario:
- * 1. Ver las tres metas disponibles (Perder peso, Ganar masa muscular, Mantener físico)
- * 2. Seleccionar una nueva meta física
- * 3. Confirmar el cambio de meta
- * 4. Actualizar automáticamente su perfil con la nueva meta
- * 
- * Flujo:
- * 1. Usuario ve las 3 tarjetas de metas
- * 2. Click en "COMENZAR" de una meta
- * 3. Aparece modal de confirmación
- * 4. Si confirma, se actualiza el perfil en el backend
- * 5. Se muestra toast de éxito/error
  */
 export default function MetasPage() {
   const router = useRouter();
   
   // ==================== ESTADOS DEL COMPONENTE ====================
   
-  /**
-   * showModal: Controla la visibilidad del modal de confirmación
-   */
   const [showModal, setShowModal] = useState(false);
-  
-  /**
-   * selectedGoal: Almacena la meta seleccionada temporalmente
-   * Valores posibles: 'perdida_peso', 'ganancia_muscular', 'mantenimiento'
-   */
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
-  
-  /**
-   * loading: Indica si hay una petición HTTP en curso
-   */
   const [loading, setLoading] = useState(false);
-
-  /**
-   * currentGoal: Almacena la meta actual del usuario
-   */
   const [currentGoal, setCurrentGoal] = useState<string | null>(null);
 
   // ==================== EFECTO INICIAL ====================
   
-  /**
-   * Obtener la meta actual del usuario al cargar la página
-   */
   useEffect(() => {
     const fetchCurrentGoal = async () => {
       try {
@@ -93,42 +61,23 @@ export default function MetasPage() {
     router.push('/macros');
   };
 
-  const handleDietasClick = () => {
-    router.push('/dietas');
-  };
-
   const handlePerfilClick = () => {
     router.push('/perfil');
   };
 
   // ==================== MANEJADORES DE META ====================
 
-  /**
-   * handleGoalClick - Se ejecuta cuando el usuario hace click en "COMENZAR"
-   * 
-   * @param goal - La meta seleccionada ('perdida_peso', 'ganancia_muscular', 'mantenimiento')
-   */
   const handleGoalClick = (goal: string) => {
     setSelectedGoal(goal);
     setShowModal(true);
   };
 
-  /**
-   * handleConfirmChange - Actualiza la meta del usuario en el backend
-   * 
-   * Proceso:
-   * 1. Obtiene el token JWT del localStorage
-   * 2. Envía PUT a /api/usuarios/perfil/ con la nueva meta
-   * 3. Si tiene éxito, muestra toast de éxito y actualiza el estado local
-   * 4. Si falla, muestra toast de error
-   */
   const handleConfirmChange = async () => {
     if (!selectedGoal) return;
 
     setLoading(true);
 
     try {
-      // Obtener token de autenticación
       const token = localStorage.getItem('access_token');
       
       if (!token) {
@@ -137,7 +86,6 @@ export default function MetasPage() {
         return;
       }
 
-      // Enviar petición para actualizar la meta
       const response = await fetch('http://localhost:8000/api/usuarios/perfil/', {
         method: 'PUT',
         headers: {
@@ -154,7 +102,6 @@ export default function MetasPage() {
         throw new Error(errorData.error || 'Error al actualizar la meta');
       }
 
-      // Éxito - actualizar estado local y mostrar mensaje
       setCurrentGoal(selectedGoal);
       toast.success('¡Meta actualizada exitosamente!');
       setShowModal(false);
@@ -168,17 +115,11 @@ export default function MetasPage() {
     }
   };
 
-  /**
-   * handleCancelChange - Cancela el cambio de meta
-   */
   const handleCancelChange = () => {
     setShowModal(false);
     setSelectedGoal(null);
   };
 
-  /**
-   * getGoalName - Obtiene el nombre legible de la meta
-   */
   const getGoalName = (goal: string | null) => {
     if (!goal) return '';
     const names: Record<string, string> = {
@@ -331,42 +272,7 @@ export default function MetasPage() {
             </div>
           </div>
 
-          {/* Icono 3: Nutrición */}
-          <div 
-            onClick={handleDietasClick}
-            style={{
-              width: '35px',
-              height: '35px',
-              position: 'relative',
-              cursor: 'pointer',
-              transition: 'transform 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-          >
-            <div style={{
-              width: '100%',
-              height: '100%',
-              backgroundColor: '#33A6DF',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '20px'
-            }}>
-              <Image 
-                src="/dietas.png" 
-                alt="Dietas" 
-                fill 
-              />
-            </div>
-          </div>
-
-          {/* Icono 4: Perfil */}
+          {/* Icono 3: Perfil */}
           <div 
             onClick={handlePerfilClick}
             style={{
@@ -444,7 +350,6 @@ export default function MetasPage() {
             position: 'relative',
             opacity: currentGoal === 'perdida_peso' ? 0.7 : 1
           }}>
-            {/* Título */}
             <h2 style={{
               fontSize: '36px',
               fontWeight: 'bold',
@@ -457,7 +362,6 @@ export default function MetasPage() {
               PERDER PESO
             </h2>
 
-            {/* Texto descriptivo */}
             <p style={{
               fontSize: '16px',
               color: '#000000',
@@ -473,7 +377,6 @@ export default function MetasPage() {
               muscular.
             </p>
 
-            {/* Botón */}
             <button
               onClick={() => handleGoalClick('perdida_peso')}
               disabled={currentGoal === 'perdida_peso'}
@@ -520,7 +423,6 @@ export default function MetasPage() {
             position: 'relative',
             opacity: currentGoal === 'ganancia_muscular' ? 0.7 : 1
           }}>
-            {/* Título */}
             <h2 style={{
               fontSize: '36px',
               fontWeight: 'bold',
@@ -533,7 +435,6 @@ export default function MetasPage() {
               GANAR MASA MUSCULAR
             </h2>
 
-            {/* Texto descriptivo */}
             <p style={{
               fontSize: '16px',
               color: '#000000',
@@ -548,7 +449,6 @@ export default function MetasPage() {
               necesarias para lograr un crecimiento muscular equilibrado y duradero.
             </p>
 
-            {/* Botón */}
             <button
               onClick={() => handleGoalClick('ganancia_muscular')}
               disabled={currentGoal === 'ganancia_muscular'}
@@ -601,7 +501,6 @@ export default function MetasPage() {
             position: 'relative',
             opacity: currentGoal === 'mantenimiento' ? 0.7 : 1
           }}>
-            {/* Título */}
             <h2 style={{
               fontSize: '36px',
               fontWeight: 'bold',
@@ -614,7 +513,6 @@ export default function MetasPage() {
               MANTENER FÍSICO
             </h2>
 
-            {/* Texto descriptivo */}
             <p style={{
               fontSize: '16px',
               color: '#000000',
@@ -629,7 +527,6 @@ export default function MetasPage() {
               forma, energía y salud a largo plazo sin caer en excesos ni descuidos.
             </p>
 
-            {/* Botón */}
             <button
               onClick={() => handleGoalClick('mantenimiento')}
               disabled={currentGoal === 'mantenimiento'}
@@ -688,7 +585,6 @@ export default function MetasPage() {
             boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
             animation: 'slideUp 0.3s ease'
           }}>
-            {/* Título del modal */}
             <h2 style={{
               fontSize: '24px',
               fontWeight: 'bold',
@@ -700,7 +596,6 @@ export default function MetasPage() {
               CONFIRMAR CAMBIO DE META
             </h2>
 
-            {/* Mensaje de confirmación */}
             <p style={{
               fontSize: '16px',
               color: '#666',
@@ -717,12 +612,10 @@ export default function MetasPage() {
               Esto actualizará automáticamente tu perfil y tus recomendaciones nutricionales.
             </p>
 
-            {/* Botones de acción */}
             <div style={{
               display: 'flex',
               gap: '15px'
             }}>
-              {/* Botón Cancelar */}
               <button
                 onClick={handleCancelChange}
                 disabled={loading}
@@ -758,7 +651,6 @@ export default function MetasPage() {
                 Cancelar
               </button>
 
-              {/* Botón Confirmar */}
               <button
                 onClick={handleConfirmChange}
                 disabled={loading}
@@ -801,22 +693,12 @@ export default function MetasPage() {
       {/* ANIMACIONES CSS */}
       <style>{`
         @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
         @keyframes slideUp {
-          from {
-            transform: translateY(30px);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
+          from { transform: translateY(30px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
         }
       `}</style>
     </div>
