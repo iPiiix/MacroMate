@@ -131,6 +131,24 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
+# Navegación del Proyecto
+
+## Enlaces de la Aplicación
+
+### Páginas Principales
+- **Inicio de Sesión**: `http://localhost:3000/login`
+- **Registro**: `http://localhost:3000/register`
+- **Dashboard/Home**: `http://localhost:3000/dashboard` (requiere autenticación)
+- **Perfil**: `http://localhost:3000/profile` (requiere autenticación)
+- **[Otra página]**: `http://localhost:3000/[ruta]` (requiere autenticación)
+
+### Panel de Administración Django
+Para acceder al panel de administración de Django:
+
+1. **URL**: `http://localhost:8000/admin`
+2. **Credenciales**: 
+   - Usuario: (el superusuario que hayas creado)
+   - Contraseña: (la contraseña que se estableció)
 
 ---
 
