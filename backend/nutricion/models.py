@@ -1,8 +1,7 @@
 from django.db import models
 from usuarios.models import Perfil
-from datetime import date # Necesario para el default
-
-# Create your models here.
+from datetime import date
+from decimal import Decimal
 
 class Macronutrientes(models.Model):
     id_perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE)
@@ -21,7 +20,6 @@ class Macronutrientes(models.Model):
 
 class RegistroDiario(models.Model):
     id_perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE)
-    # CORRECCIÓN: default=date.today permite registrar fechas pasadas
     fecha = models.DateField(default=date.today) 
     calorias_consumidas = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     proteinas_consumidas = models.DecimalField(max_digits=6, decimal_places=2, default=0)
@@ -43,7 +41,7 @@ class ComidaDiaria(models.Model):
     ]
     
     id_registro = models.ForeignKey(RegistroDiario, on_delete=models.CASCADE)
-    tipo_comida = models.CharField(max_length=20, choices=TIPO_COMIDA_CHOICES)
+    tipo_comida = models.CharField(max_length=20, choices=TIPO_COMIDA_CHOICES, default='snack')
     nombre = models.CharField(max_length=200, blank=True)
     calorias = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
     proteinas = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
@@ -52,39 +50,3 @@ class ComidaDiaria(models.Model):
     
     class Meta:
         db_table = 'comidas_diarias'
-
-class AlimentoConsumido(models.Model):
-    id_comida = models.ForeignKey(ComidaDiaria, on_delete=models.CASCADE)
-    id_alimento = models.ForeignKey('alimentos.Alimento', on_delete=models.CASCADE)
-    cantidad_gramos = models.DecimalField(max_digits=6, decimal_places=2)
-    
-    class Meta:
-        db_table = 'alimentos_consumidos'
-
-class Ejercicio(models.Model):
-    CATEGORIA_CHOICES = [
-        ('cardio', 'Cardio'),
-        ('fuerza', 'Fuerza'),
-        ('flexibilidad', 'Flexibilidad'),
-        ('resistencia', 'Resistencia'),
-        ('otro', 'Otro'),
-    ]
-    
-    nombre = models.CharField(max_length=200)
-    categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES)
-    calorias_por_hora = models.DecimalField(max_digits=6, decimal_places=2)
-    
-    def __str__(self):
-        return self.nombre
-    
-    class Meta:
-        db_table = 'ejercicios'
-
-class RegistroEjercicio(models.Model):
-    id_registro = models.ForeignKey(RegistroDiario, on_delete=models.CASCADE)
-    id_ejercicio = models.ForeignKey(Ejercicio, on_delete=models.CASCADE)
-    duracion_minutos = models.IntegerField()
-    calorias_quemadas = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
-    
-    class Meta:
-        db_table = 'registro_ejercicios'

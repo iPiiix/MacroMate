@@ -14,5 +14,4 @@ urlpatterns = [
     path('api/usuarios/logout/', logout_usuario, name='logout'),
     
     path('api/nutricion/', include('nutricion.urls')),
-    path('api/alimentos/', include('alimentos.urls')),
 ]

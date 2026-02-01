@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Usuario, Perfil, MedidaCorporal, HistorialObjetivo
+from .models import Usuario, Perfil
 
+# Registramos el modelo de Usuario personalizado
 @admin.register(Usuario)
 class UsuarioAdmin(UserAdmin):  
     list_display = ('id_usuario', 'nombre_usuario', 'email', 'fecha_creacion', 'is_active', 'is_staff')
@@ -22,16 +23,14 @@ class UsuarioAdmin(UserAdmin):
         }),
     )
 
+# Registramos el modelo de Perfil
 @admin.register(Perfil)
 class PerfilAdmin(admin.ModelAdmin):
     list_display = (
         'id_usuario', 
-        'nombre_completo',  # METODO AUXILIAR
+        'nombre_completo',
         'genero', 
-        'altura', 
         'peso_actual', 
-        'peso_objetivo',
-        'nivel_actividad', 
         'objetivo',
         'bmr',
         'tdee',
@@ -39,7 +38,7 @@ class PerfilAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('bmr', 'tdee')
     
-    list_filter = ('genero', 'objetivo', 'nivel_actividad', 'fecha_actualizacion')
+    list_filter = ('genero', 'objetivo', 'nivel_actividad')
     search_fields = ('nombre', 'apellidos', 'id_usuario__nombre_usuario', 'id_usuario__email')
 
     fieldsets = (
@@ -63,15 +62,3 @@ class PerfilAdmin(admin.ModelAdmin):
     def nombre_completo(self, obj):
         return f"{obj.nombre} {obj.apellidos}"
     nombre_completo.short_description = 'Nombre Completo'
-
-@admin.register(MedidaCorporal)
-class MedidaCorporalAdmin(admin.ModelAdmin):
-    list_display = ('id_perfil', 'fecha_registro', 'peso', 'porcentaje_grasa')
-    list_filter = ('fecha_registro',)
-    ordering = ('-fecha_registro',)
-
-@admin.register(HistorialObjetivo)
-class HistorialObjetivoAdmin(admin.ModelAdmin):
-    list_display = ('id_perfil', 'objetivo_anterior', 'objetivo_nuevo', 'fecha_cambio')
-    list_filter = ('objetivo_anterior', 'objetivo_nuevo')
-    ordering = ('-fecha_cambio',)

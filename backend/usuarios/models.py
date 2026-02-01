@@ -3,7 +3,9 @@ from decimal import Decimal
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
-# Create your models here.
+# ========================================================
+# 1. GESTOR DE USUARIOS 
+# ========================================================
 class UsuarioManager(BaseUserManager):
     def create_user(self, email, nombre_usuario, password=None):
         if not email:
@@ -29,6 +31,9 @@ class UsuarioManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+# ========================================================
+# 2. MODELO DE USUARIO (Autenticación)
+# ========================================================
 class Usuario(AbstractBaseUser, PermissionsMixin):
     id_usuario = models.AutoField(primary_key=True)
     nombre_usuario = models.CharField(max_length=50, unique=True)
@@ -52,6 +57,9 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     class Meta:
         db_table = 'usuarios'
 
+# ========================================================
+# 3. MODELO DE PERFIL (Datos Físicos)
+# ========================================================
 class Perfil(models.Model):
     GENERO_CHOICES = [
         ('masculino', 'Masculino'),
@@ -82,8 +90,8 @@ class Perfil(models.Model):
     peso_objetivo = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # kg
     nivel_actividad = models.CharField(max_length=20, choices=NIVEL_ACTIVIDAD_CHOICES, default='sedentario')
     objetivo = models.CharField(max_length=20, choices=OBJETIVO_CHOICES, default='mantenimiento')
-    bmr = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)  # Tasa Metabólica Basal
-    tdee = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)  # Gasto Energético Total
+    bmr = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
+    tdee = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     
     def __str__(self):
@@ -97,7 +105,6 @@ class Perfil(models.Model):
             return None
         today = date.today()
         return today.year - self.fecha_nacimiento.year - ((today.month, today.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day))
-
 
     def calcular_bmr(self):
         edad = self.calcular_edad()
@@ -120,7 +127,6 @@ class Perfil(models.Model):
         }
         return factores.get(self.nivel_actividad, 1.2)
 
-
     def save(self, *args, **kwargs):
         bmr_calculado = self.calcular_bmr()
         if bmr_calculado:
@@ -128,28 +134,3 @@ class Perfil(models.Model):
             tdee_calculado = bmr_calculado * self.factor_actividad()
             self.tdee = Decimal(str(round(tdee_calculado, 2)))
         super().save(*args, **kwargs)
-
-class MedidaCorporal(models.Model):
-    id_perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE)
-    fecha_registro = models.DateField(auto_now_add=True)
-    peso = models.DecimalField(max_digits=5, decimal_places=2)
-    porcentaje_grasa = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
-    
-    class Meta:
-        db_table = 'medidas_corporales'
-
-class HistorialObjetivo(models.Model):
-    OBJETIVO_CHOICES = [
-        ('perdida_peso', 'Pérdida de Peso'),
-        ('mantenimiento', 'Mantenimiento'),
-        ('ganancia_muscular', 'Ganancia Muscular'),
-    ]
-    
-    id_perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE)
-    objetivo_anterior = models.CharField(max_length=20, choices=OBJETIVO_CHOICES)
-    objetivo_nuevo = models.CharField(max_length=20, choices=OBJETIVO_CHOICES)
-    peso_en_cambio = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    fecha_cambio = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        db_table = 'historial_objetivos'
