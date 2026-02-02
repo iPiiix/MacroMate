@@ -32,6 +32,46 @@ export default function PerfilPage() {
   const [bmr, setBmr] = useState<number>(0);
   const [tdee, setTdee] = useState<number>(0);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  // ==================== ELIMINACIÓN DE USUARIO ====================
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+
+    try {
+      const token = localStorage.getItem('access_token');
+      
+      const response = await fetch('http://localhost:8000/api/usuarios/eliminar/', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al eliminar cuenta');
+      }
+
+      // Limpiar todo del cliente
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('macroProgress');
+
+      toast.success('Cuenta eliminada correctamente');
+
+      setTimeout(() => {
+        router.push('/login');
+      }, 1500);
+
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Error al eliminar cuenta');
+      setDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
 
   // ==================== CÁLCULO DE BMR ====================
   
@@ -122,20 +162,6 @@ export default function PerfilPage() {
   };
 
   // ==================== CERRAR SESIÓN ====================
-  /**
-   * handleLogout
-   * 
-   * El backend usa SimpleJWT con token_blacklist.
-   * El endpoint POST /api/usuarios/logout/ espera { refresh: "<refresh_token>" }
-   * y blacklistea ese refresh_token en la BD para que no pueda reusarse.
-   * 
-   * Flujo:
-   *  1. POST al endpoint con el refresh_token en el body
-   *  2. Si el backend responde OK → token inválido en el servidor
-   *  3. Independientemente del resultado, limpiar localStorage
-   *     (si el backend falla por red, los tokens ya no son útiles localmente)
-   *  4. Toast de confirmación → redirigir a /login
-   */
   const handleLogout = async () => {
     setLoggingOut(true);
 
@@ -152,23 +178,19 @@ export default function PerfilPage() {
           },
           body: JSON.stringify({ refresh: refreshToken })
         });
-        // No se checkea el status: si el blacklist falla, igual cerramos sesión localmente
       }
 
-      // Limpiar todo del cliente
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('macroProgress');
 
       toast.success('Sesión cerrada correctamente');
 
-      // Pausa corta para que el toast se vea antes de navegar
       setTimeout(() => {
         router.push('/login');
       }, 900);
 
     } catch (error) {
-      // Error de red → igual cerramos sesión localmente
       console.error('Error al cerrar sesión:', error);
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
@@ -277,7 +299,6 @@ export default function PerfilPage() {
         top: 0,
         zIndex: 1000
       }}>
-        {/* Logo MacroMate */}
         <div 
           onClick={handlePaginaPrincipalClick}
           style={{ 
@@ -322,7 +343,6 @@ export default function PerfilPage() {
           </span>
         </div>
 
-        {/* Iconos de navegación */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -354,14 +374,12 @@ export default function PerfilPage() {
         maxWidth: '1100px',
         margin: '0 auto'
       }}>
-        {/* Tarjeta principal con fondo azul */}
         <div style={{
           backgroundColor: '#33A6DF',
           borderRadius: '30px',
           padding: '50px',
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)'
         }}>
-          {/* Título */}
           <h1 style={{
             fontSize: '36px',
             fontWeight: 'bold',
@@ -373,13 +391,12 @@ export default function PerfilPage() {
             INFORMACIÓN PERSONAL
           </h1>
 
-          {/* Grid de 2 columnas */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
             gap: '40px'
           }}>
-            {/* ========== COLUMNA IZQUIERDA ========== */}
+            {/* COLUMNA IZQUIERDA */}
             <div>
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>NOMBRE:</label>
@@ -424,7 +441,7 @@ export default function PerfilPage() {
               </div>
             </div>
 
-            {/* ========== COLUMNA DERECHA ========== */}
+            {/* COLUMNA DERECHA */}
             <div>
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>MIEMBRO DESDE:</label>
@@ -464,6 +481,7 @@ export default function PerfilPage() {
           </div>
         </div>
 
+       
         {/* ========== BOTÓN CERRAR SESIÓN ========== */}
         <div style={{
           marginTop: '45px',
@@ -505,23 +523,224 @@ export default function PerfilPage() {
                 e.currentTarget.style.boxShadow = '0 4px 15px rgba(231, 76, 60, 0.45)';
               }
             }}
-            onMouseDown={(e) => {
-              if (!loggingOut) {
-                e.currentTarget.style.transform = 'translateY(0px)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(231, 76, 60, 0.35)';
-              }
-            }}
-            onMouseUp={(e) => {
-              if (!loggingOut) {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(231, 76, 60, 0.55)';
-              }
-            }}
           >
             {loggingOut ? 'CERRANDO...' : 'CERRAR SESIÓN'}
           </button>
         </div>
+
+        {/* ========== BOTÓN ELIMINAR CUENTA ========== */}
+        <div style={{
+          marginTop: '45px',
+          display: 'flex',
+          justifyContent: 'center'
+        }}>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            disabled={deleting}
+            style={{
+              backgroundColor: deleting ? '#922b21' : '#e74c3c',
+              color: '#ffffff',
+              padding: '18px 56px',
+              borderRadius: '16px',
+              border: 'none',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              cursor: deleting ? 'not-allowed' : 'pointer',
+              letterSpacing: '2px',
+              textTransform: 'uppercase' as const,
+              fontFamily: "'Bungee', sans-serif",
+              opacity: deleting ? 0.65 : 1,
+              boxShadow: deleting
+                ? 'none'
+                : '0 4px 15px rgba(192, 57, 43, 0.55)',
+              transition: 'background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (!deleting) {
+                e.currentTarget.style.backgroundColor = '#922b21';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(192, 57, 43, 0.65)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!deleting) {
+                e.currentTarget.style.backgroundColor = '#c0392b';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(192, 57, 43, 0.55)';
+              }
+            }}
+          >
+            ELIMINAR CUENTA
+          </button>
+        </div>
       </main>
+
+      {/* ========== MODAL DE CONFIRMACIÓN DE ELIMINACIÓN ========== */}
+      {showDeleteModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          animation: 'fadeIn 0.3s ease'
+        }}>
+          <div style={{
+            backgroundColor: '#f5f5f5',
+            borderRadius: '20px',
+            padding: '40px',
+            maxWidth: '550px',
+            width: '90%',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+            animation: 'slideUp 0.3s ease'
+          }}>
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '30px'
+            }}>
+              <div style={{
+                fontSize: '64px',
+                marginBottom: '20px'
+              }}>
+              </div>
+              <h2 style={{
+                fontSize: '28px',
+                fontWeight: 'bold',
+                color: '#c0392b',
+                marginBottom: '15px',
+                letterSpacing: '1px'
+              }}>
+                ELIMINAR CUENTA
+              </h2>
+              <p style={{
+                fontSize: '16px',
+                color: '#666',
+                lineHeight: '1.6',
+                fontFamily: "'Inter', sans-serif"
+              }}>
+                Esta acción es <strong style={{ color: '#c0392b' }}>IRREVERSIBLE</strong>.
+                <br /><br />
+                Se eliminarán permanentemente:
+              </p>
+            </div>
+
+            <ul style={{
+              listStyle: 'none',
+              padding: 0,
+              marginBottom: '30px',
+              fontFamily: "'Inter', sans-serif",
+              fontSize: '14px',
+              color: '#444'
+            }}>
+              <li style={{ marginBottom: '10px', paddingLeft: '25px', position: 'relative' }}>
+                <span style={{ position: 'absolute', left: 0 }}>-</span>
+                Todos tus datos personales
+              </li>
+              <li style={{ marginBottom: '10px', paddingLeft: '25px', position: 'relative' }}>
+                <span style={{ position: 'absolute', left: 0 }}>-</span>
+                Tu historial de macros y comidas
+              </li>
+              <li style={{ marginBottom: '10px', paddingLeft: '25px', position: 'relative' }}>
+                <span style={{ position: 'absolute', left: 0 }}>-</span>
+                Tus objetivos y metas
+              </li>
+              <li style={{ paddingLeft: '25px', position: 'relative' }}>
+                <span style={{ position: 'absolute', left: 0 }}>-</span>
+                Tu acceso a la plataforma
+              </li>
+            </ul>
+
+            <p style={{
+              fontSize: '14px',
+              color: '#c0392b',
+              textAlign: 'center',
+              marginBottom: '30px',
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 'bold'
+            }}>
+              ¿Estás completamente seguro de que deseas continuar?
+            </p>
+
+            <div style={{ display: 'flex', gap: '15px' }}>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                style={{
+                  flex: 1,
+                  padding: '16px',
+                  border: '2px solid #1a1a1a',
+                  borderRadius: '12px',
+                  backgroundColor: 'transparent',
+                  color: '#1a1a1a',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.5px',
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease',
+                  fontFamily: "'Inter', sans-serif",
+                  textTransform: 'uppercase',
+                  opacity: deleting ? 0.5 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!deleting) {
+                    e.currentTarget.style.backgroundColor = '#1a1a1a';
+                    e.currentTarget.style.color = '#ffffff';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!deleting) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#1a1a1a';
+                  }
+                }}
+              >
+                Cancelar
+              </button>
+
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+                style={{
+                  flex: 1,
+                  padding: '16px',
+                  border: 'none',
+                  borderRadius: '12px',
+                  backgroundColor: deleting ? '#922b21' : '#c0392b',
+                  color: '#ffffff',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.5px',
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease',
+                  fontFamily: "'Inter', sans-serif",
+                  textTransform: 'uppercase',
+                  opacity: deleting ? 0.7 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!deleting) {
+                    e.currentTarget.style.backgroundColor = '#922b21';
+                    e.currentTarget.style.transform = 'scale(1.02)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!deleting) {
+                    e.currentTarget.style.backgroundColor = '#c0392b';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }
+                }}
+              >
+                {deleting ? 'Eliminando...' : 'Sí, Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

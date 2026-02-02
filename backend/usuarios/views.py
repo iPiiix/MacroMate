@@ -129,3 +129,39 @@ def logout_usuario(request):
         return Response({'message': 'Sesión cerrada exitosamente'}, status=status.HTTP_205_RESET_CONTENT)
     except Exception as e:
         return Response({'error': 'Token inválido o expirado'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def eliminar_usuario(request):
+    """
+    Elimina completamente la cuenta del usuario autenticado.
+    
+    Este endpoint:
+    1. Elimina el perfil asociado (cascade elimina registros relacionados)
+    2. Elimina el usuario
+    3. El cliente debe limpiar tokens del localStorage
+    
+    IMPORTANTE: Esta acción es IRREVERSIBLE
+    """
+    try:
+        usuario = request.user
+        
+        # Usar transacción atómica para garantizar que todo se elimine o nada
+        with transaction.atomic():
+            # Eliminar el usuario (el perfil se elimina automáticamente por CASCADE)
+            # También se eliminan automáticamente:
+            # - Macronutrientes (FK a Perfil)
+            # - RegistroDiario (FK a Perfil)
+            # - ComidaDiaria (FK a RegistroDiario)
+            usuario.delete()
+        
+        return Response(
+            {'message': 'Cuenta eliminada exitosamente'},
+            status=status.HTTP_204_NO_CONTENT
+        )
+        
+    except Exception as e:
+        return Response(
+            {'error': f'Error al eliminar cuenta: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
