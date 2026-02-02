@@ -8,8 +8,6 @@ class ComidaDiariaSerializer(serializers.ModelSerializer):
     class Meta:
         model = ComidaDiaria
         fields = ['id', 'nombre', 'calorias', 'proteinas', 'carbohidratos', 'grasas', 'tipo_comida']
-        # Solo estos campos son necesarios para el frontend
-        # id_registro se asigna automáticamente en la vista
 
 
 class ComidaDiariaCreateSerializer(serializers.Serializer):
@@ -22,4 +20,4 @@ class ComidaDiariaCreateSerializer(serializers.Serializer):
     proteinas = serializers.FloatField(min_value=0)
     carbohidratos = serializers.FloatField(min_value=0)
     grasas = serializers.FloatField(min_value=0)
-    fecha = serializers.DateField()  # El frontend envía la fecha como YYYY-MM-DD
+    fecha = serializers.DateField(required=False)  # Opcional, por defecto hoy

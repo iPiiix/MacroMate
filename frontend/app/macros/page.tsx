@@ -8,13 +8,13 @@ import toast from 'react-hot-toast';
 /**
  * MacrosPage - Página de seguimiento de macronutrientes
  * 
- * CORRECCIONES APLICADAS:
- * 1. Conversión correcta de strings a números usando Number() o parseFloat()
- * 2. Suma correcta de valores numéricos en lugar de concatenación de strings
- * 3. Validación de valores numéricos antes de procesarlos
+ * CAMBIOS IMPLEMENTADOS:
+ * - Persistencia de datos en base de datos SQLite (backend Django)
+ * - Carga de comidas desde el servidor al iniciar
+ * - Guardado automático de cada comida en el servidor
+ * - Sincronización en tiempo real entre frontend y backend
  */
 
-// Interfaces para tipado
 interface UserProfile {
   nombre: string;
   apellidos: string;
@@ -41,6 +41,16 @@ interface MacroProgress {
   grasas: number;
 }
 
+interface Comida {
+  id: number;
+  nombre: string;
+  calorias: number;
+  proteinas: number;
+  carbohidratos: number;
+  grasas: number;
+  tipo_comida: string;
+}
+
 export default function MacrosPage() {
   const router = useRouter();
   
@@ -61,6 +71,7 @@ export default function MacrosPage() {
     grasas: 0
   });
   
+  const [comidas, setComidas] = useState<Comida[]>([]);
   const [showAddFoodModal, setShowAddFoodModal] = useState(false);
   const [loading, setLoading] = useState(true);
   
@@ -142,6 +153,39 @@ export default function MacrosPage() {
     };
   };
 
+  // ==================== CARGAR COMIDAS DESDE EL SERVIDOR ====================
+  
+  const loadComidasFromServer = async (token: string) => {
+    try {
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      
+      const response = await fetch(`http://localhost:8000/api/nutricion/comidas/?fecha=${today}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al cargar comidas');
+      }
+
+      const data = await response.json();
+      
+      // Actualizar estado con las comidas y totales del día
+      setComidas(data.comidas || []);
+      setMacroProgress({
+        calorias: data.totales?.calorias || 0,
+        proteinas: data.totales?.proteinas || 0,
+        carbohidratos: data.totales?.carbohidratos || 0,
+        grasas: data.totales?.grasas || 0
+      });
+
+    } catch (error) {
+      console.error('Error al cargar comidas:', error);
+      // No mostrar error al usuario si es la primera vez del día
+    }
+  };
+
   // ==================== CARGA INICIAL DE DATOS ====================
   
   useEffect(() => {
@@ -155,6 +199,7 @@ export default function MacrosPage() {
           return;
         }
 
+        // Cargar perfil del usuario
         const response = await fetch('http://localhost:8000/api/usuarios/perfil/', {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -168,40 +213,16 @@ export default function MacrosPage() {
         const profile = await response.json();
         setUserProfile(profile);
 
+        // Calcular objetivos de macros
         const bmr = calculateBMR(profile);
-        console.log('BMR calculado:', bmr);
-        
         const tdee = calculateTDEE(bmr, profile.nivel_actividad);
-        console.log('TDEE calculado:', tdee);
-        
         const caloriasAjustadas = adjustCaloriesByGoal(tdee, profile.objetivo);
-        console.log('Calorías ajustadas por objetivo:', caloriasAjustadas);
-        
         const macros = calculateMacroDistribution(caloriasAjustadas, profile.objetivo);
-        console.log('Distribución de macros:', macros);
         
         setMacroGoals(macros);
 
-        const savedProgress = localStorage.getItem('macroProgress');
-        if (savedProgress) {
-          try {
-            const parsedProgress = JSON.parse(savedProgress);
-            setMacroProgress({
-              calorias: Number(parsedProgress.calorias) || 0,
-              proteinas: Number(parsedProgress.proteinas) || 0,
-              carbohidratos: Number(parsedProgress.carbohidratos) || 0,
-              grasas: Number(parsedProgress.grasas) || 0
-            });
-          } catch (e) {
-            console.error('Error al parsear progreso guardado:', e);
-            setMacroProgress({
-              calorias: 0,
-              proteinas: 0,
-              carbohidratos: 0,
-              grasas: 0
-            });
-          }
-        }
+        // Cargar comidas del día desde el servidor
+        await loadComidasFromServer(token);
 
         setLoading(false);
 
@@ -242,7 +263,7 @@ export default function MacrosPage() {
     });
   };
 
-  const handleAddFood = () => {
+  const handleAddFood = async () => {
     if (!foodData.nombre || !foodData.calorias || !foodData.proteinas || 
         !foodData.carbohidratos || !foodData.grasas) {
       toast.error('Por favor completa todos los campos');
@@ -264,44 +285,126 @@ export default function MacrosPage() {
       return;
     }
 
-    setMacroProgress(prev => {
-      const newProgress = {
+    try {
+      const token = localStorage.getItem('access_token');
+      const today = new Date().toISOString().split('T')[0];
+
+      // Guardar la comida en el servidor
+      const response = await fetch('http://localhost:8000/api/nutricion/comidas/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          nombre: foodData.nombre,
+          calorias: newCalorias,
+          proteinas: newProteinas,
+          carbohidratos: newCarbohidratos,
+          grasas: newGrasas,
+          fecha: today
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al guardar comida');
+      }
+
+      const nuevaComida = await response.json();
+
+      // Actualizar estado local
+      setComidas(prev => [...prev, nuevaComida]);
+      
+      setMacroProgress(prev => ({
         calorias: Number(prev.calorias) + newCalorias,
         proteinas: Number(prev.proteinas) + newProteinas,
         carbohidratos: Number(prev.carbohidratos) + newCarbohidratos,
         grasas: Number(prev.grasas) + newGrasas
-      };
-      
-      localStorage.setItem('macroProgress', JSON.stringify(newProgress));
-      console.log('Nuevo progreso:', newProgress);
-      
-      return newProgress;
-    });
+      }));
 
-    toast.success(`${foodData.nombre} añadido correctamente`);
-    
-    setFoodData({
-      nombre: '',
-      calorias: '',
-      proteinas: '',
-      carbohidratos: '',
-      grasas: ''
-    });
-    setShowAddFoodModal(false);
+      toast.success(`${foodData.nombre} añadido correctamente`);
+      
+      setFoodData({
+        nombre: '',
+        calorias: '',
+        proteinas: '',
+        carbohidratos: '',
+        grasas: ''
+      });
+      setShowAddFoodModal(false);
+
+    } catch (error) {
+      console.error('Error al guardar comida:', error);
+      toast.error('Error al guardar la comida');
+    }
   };
 
-  // ==================== FUNCIÓN PARA RESETEAR PROGRESO ====================
+  // ==================== ELIMINAR COMIDA ====================
   
-  const handleResetProgress = () => {
-    if (confirm('¿Estás seguro de que quieres resetear el progreso del día?')) {
+  const handleDeleteFood = async (comidaId: number) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta comida?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('access_token');
+
+      const response = await fetch(`http://localhost:8000/api/nutricion/comidas/?id=${comidaId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al eliminar comida');
+      }
+
+      // Recargar comidas desde el servidor para tener datos actualizados
+      await loadComidasFromServer(token!);
+      
+      toast.success('Comida eliminada correctamente');
+
+    } catch (error) {
+      console.error('Error al eliminar comida:', error);
+      toast.error('Error al eliminar la comida');
+    }
+  };
+
+  // ==================== RESETEAR PROGRESO ====================
+  
+  const handleResetProgress = async () => {
+    if (!confirm('¿Estás seguro de que quieres eliminar todas las comidas del día?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('access_token');
+
+      // Eliminar todas las comidas una por una
+      for (const comida of comidas) {
+        await fetch(`http://localhost:8000/api/nutricion/comidas/?id=${comida.id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      }
+
+      // Resetear estado local
+      setComidas([]);
       setMacroProgress({
         calorias: 0,
         proteinas: 0,
         carbohidratos: 0,
         grasas: 0
       });
-      localStorage.removeItem('macroProgress');
+
       toast.success('Progreso reseteado correctamente');
+
+    } catch (error) {
+      console.error('Error al resetear:', error);
+      toast.error('Error al resetear el progreso');
     }
   };
 
@@ -506,7 +609,9 @@ export default function MacrosPage() {
           </div>
         </div>
 
-        {/* ========== BARRA DE CALORÍAS ========== */}
+        {/* ========== BARRAS DE PROGRESO ========== */}
+        
+        {/* CALORÍAS */}
         <div style={macroCardStyle}>
           <div style={{
             display: 'flex',
@@ -529,7 +634,7 @@ export default function MacrosPage() {
           </div>
         </div>
 
-        {/* ========== BARRA DE PROTEÍNAS ========== */}
+        {/* PROTEÍNAS */}
         <div style={macroCardStyle}>
           <div style={{
             display: 'flex',
@@ -552,7 +657,7 @@ export default function MacrosPage() {
           </div>
         </div>
 
-        {/* ========== BARRA DE CARBOHIDRATOS ========== */}
+        {/* CARBOHIDRATOS */}
         <div style={macroCardStyle}>
           <div style={{
             display: 'flex',
@@ -575,7 +680,7 @@ export default function MacrosPage() {
           </div>
         </div>
 
-        {/* ========== BARRA DE GRASAS ========== */}
+        {/* GRASAS */}
         <div style={macroCardStyle}>
           <div style={{
             display: 'flex',
@@ -597,6 +702,88 @@ export default function MacrosPage() {
             }} />
           </div>
         </div>
+
+        {/* ========== LISTA DE COMIDAS DEL DÍA ========== */}
+        {comidas.length > 0 && (
+          <div style={{
+            marginTop: '40px',
+            backgroundColor: '#1e6b8f',
+            borderRadius: '20px',
+            padding: '30px',
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)'
+          }}>
+            <h2 style={{
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: '#ffffff',
+              marginBottom: '20px',
+              letterSpacing: '1px'
+            }}>
+              COMIDAS DE HOY
+            </h2>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {comidas.map((comida) => (
+                <div
+                  key={comida.id}
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    borderRadius: '12px',
+                    padding: '15px 20px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}
+                >
+                  <div>
+                    <div style={{
+                      fontSize: '18px',
+                      fontWeight: 'bold',
+                      color: '#ffffff',
+                      marginBottom: '8px'
+                    }}>
+                      {comida.nombre}
+                    </div>
+                    <div style={{
+                      fontSize: '14px',
+                      color: '#e0e0e0',
+                      fontFamily: "'Inter', sans-serif"
+                    }}>
+                      {Math.round(comida.calorias)} kcal • 
+                      {Math.round(comida.proteinas)}g P • 
+                      {Math.round(comida.carbohidratos)}g C • 
+                      {Math.round(comida.grasas)}g G
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleDeleteFood(comida.id)}
+                    style={{
+                      backgroundColor: '#e53e3e',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '8px 16px',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      fontFamily: "'Inter', sans-serif"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#c53030';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#e53e3e';
+                    }}
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
 
       {/* ========== MODAL AÑADIR COMIDA ========== */}

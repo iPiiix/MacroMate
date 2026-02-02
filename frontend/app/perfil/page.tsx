@@ -6,7 +6,12 @@ import Image from 'next/image';
 import toast from 'react-hot-toast';
 
 /**
- * PerfilPage - Página de visualización del perfil del usuario
+ * PerfilPage - Página de visualización y edición del perfil del usuario
+ * 
+ * NUEVAS FUNCIONALIDADES:
+ * - Editar peso actual
+ * - Editar nivel de actividad física
+ * - Recalcular BMR y TDEE automáticamente
  */
 
 interface UserProfile {
@@ -34,6 +39,13 @@ export default function PerfilPage() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  
+  // Estados para edición
+  const [editingPeso, setEditingPeso] = useState(false);
+  const [editingActividad, setEditingActividad] = useState(false);
+  const [tempPeso, setTempPeso] = useState('');
+  const [tempActividad, setTempActividad] = useState('');
+  const [saving, setSaving] = useState(false);
 
   // ==================== ELIMINACIÓN DE USUARIO ====================
 
@@ -54,7 +66,6 @@ export default function PerfilPage() {
         throw new Error('Error al eliminar cuenta');
       }
 
-      // Limpiar todo del cliente
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('macroProgress');
@@ -143,6 +154,131 @@ export default function PerfilPage() {
     fetchUserProfile();
   }, [router]);
 
+  // ==================== EDICIÓN DE PESO ====================
+
+  const handleStartEditPeso = () => {
+    setTempPeso(userProfile?.peso_actual.toString() || '');
+    setEditingPeso(true);
+  };
+
+  const handleCancelEditPeso = () => {
+    setEditingPeso(false);
+    setTempPeso('');
+  };
+
+  const handleSavePeso = async () => {
+    const nuevoPeso = parseFloat(tempPeso);
+
+    if (isNaN(nuevoPeso) || nuevoPeso <= 0) {
+      toast.error('Peso inválido');
+      return;
+    }
+
+    if (nuevoPeso < 30 || nuevoPeso > 300) {
+      toast.error('El peso debe estar entre 30 y 300 kg');
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const token = localStorage.getItem('access_token');
+
+      const response = await fetch('http://localhost:8000/api/usuarios/perfil/', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          peso_actual: nuevoPeso
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar peso');
+      }
+
+      const updatedProfile = await response.json();
+      setUserProfile(updatedProfile);
+
+      // Recalcular BMR y TDEE
+      const newBMR = calculateBMR(updatedProfile);
+      const newTDEE = calculateTDEE(newBMR, updatedProfile.nivel_actividad);
+      setBmr(newBMR);
+      setTdee(newTDEE);
+
+      toast.success('Peso actualizado correctamente');
+      setEditingPeso(false);
+      setTempPeso('');
+
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Error al actualizar el peso');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ==================== EDICIÓN DE ACTIVIDAD FÍSICA ====================
+
+  const handleStartEditActividad = () => {
+    setTempActividad(userProfile?.nivel_actividad || '');
+    setEditingActividad(true);
+  };
+
+  const handleCancelEditActividad = () => {
+    setEditingActividad(false);
+    setTempActividad('');
+  };
+
+  const handleSaveActividad = async () => {
+    if (!tempActividad) {
+      toast.error('Selecciona un nivel de actividad');
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const token = localStorage.getItem('access_token');
+
+      const response = await fetch('http://localhost:8000/api/usuarios/perfil/', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          nivel_actividad: tempActividad
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar actividad');
+      }
+
+      const updatedProfile = await response.json();
+      setUserProfile(updatedProfile);
+
+      // Recalcular TDEE con nuevo nivel de actividad
+      const newBMR = calculateBMR(updatedProfile);
+      const newTDEE = calculateTDEE(newBMR, updatedProfile.nivel_actividad);
+      setBmr(newBMR);
+      setTdee(newTDEE);
+
+      toast.success('Nivel de actividad actualizado');
+      setEditingActividad(false);
+      setTempActividad('');
+
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Error al actualizar la actividad');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // ==================== MANEJADORES DE NAVEGACIÓN ====================
 
   const handlePaginaPrincipalClick = () => {
@@ -162,6 +298,7 @@ export default function PerfilPage() {
   };
 
   // ==================== CERRAR SESIÓN ====================
+  
   const handleLogout = async () => {
     setLoggingOut(true);
 
@@ -433,11 +570,53 @@ export default function PerfilPage() {
                 </div>
               </div>
 
+              {/* PESO (editable)*/}
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>PESO:</label>
-                <div style={inputReadOnlyStyle}>
-                  {userProfile.peso_actual} kg
-                </div>
+                {editingPeso ? (
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <input
+                      type="number"
+                      value={tempPeso}
+                      onChange={(e) => setTempPeso(e.target.value)}
+                      placeholder="Ej: 75"
+                      step="0.1"
+                      min="30"
+                      max="300"
+                      disabled={saving}
+                      style={{
+                        ...inputEditableStyle,
+                        flex: 1
+                      }}
+                    />
+                    <button
+                      onClick={handleSavePeso}
+                      disabled={saving}
+                      style={saveButtonStyle}
+                    >
+                      ✓
+                    </button>
+                    <button
+                      onClick={handleCancelEditPeso}
+                      disabled={saving}
+                      style={cancelButtonStyle}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <div style={{ ...inputReadOnlyStyle, flex: 1 }}>
+                      {userProfile.peso_actual} kg
+                    </div>
+                    <button
+                      onClick={handleStartEditPeso}
+                      style={editButtonStyle}
+                    >
+                      ✏️ Editar
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -450,11 +629,54 @@ export default function PerfilPage() {
                 </div>
               </div>
 
+              {/* NIVEL DE ACTIVIDAD (editable) */}
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>NIVEL DE ACTIVIDAD:</label>
-                <div style={inputReadOnlyStyle}>
-                  {formatNivelActividad(userProfile.nivel_actividad)}
-                </div>
+                {editingActividad ? (
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <select
+                      value={tempActividad}
+                      onChange={(e) => setTempActividad(e.target.value)}
+                      disabled={saving}
+                      style={{
+                        ...inputEditableStyle,
+                        flex: 1
+                      }}
+                    >
+                      <option value="sedentario">Sedentario</option>
+                      <option value="ligero">Ligero</option>
+                      <option value="moderado">Moderado</option>
+                      <option value="activo">Activo</option>
+                      <option value="muy_activo">Muy Activo</option>
+                    </select>
+                    <button
+                      onClick={handleSaveActividad}
+                      disabled={saving}
+                      style={saveButtonStyle}
+                    >
+                      ✓
+                    </button>
+                    <button
+                      onClick={handleCancelEditActividad}
+                      disabled={saving}
+                      style={cancelButtonStyle}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <div style={{ ...inputReadOnlyStyle, flex: 1 }}>
+                      {formatNivelActividad(userProfile.nivel_actividad)}
+                    </div>
+                    <button
+                      onClick={handleStartEditActividad}
+                      style={editButtonStyle}
+                    >
+                      ✏️ Editar
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div style={fieldContainerStyle}>
@@ -481,8 +703,51 @@ export default function PerfilPage() {
           </div>
         </div>
 
-       
-        {/* ========== BOTÓN CERRAR SESIÓN ========== */}
+        {/* BOTÓN ELIMINAR CUENTA */}
+        <div style={{
+          marginTop: '45px',
+          display: 'flex',
+          justifyContent: 'center'
+        }}>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            disabled={deleting}
+            style={{
+              backgroundColor: deleting ? '#922b21' : '#c0392b',
+              color: '#ffffff',
+              padding: '18px 56px',
+              borderRadius: '16px',
+              border: 'none',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              cursor: deleting ? 'not-allowed' : 'pointer',
+              letterSpacing: '2px',
+              textTransform: 'uppercase' as const,
+              fontFamily: "'Bungee', sans-serif",
+              opacity: deleting ? 0.65 : 1,
+              boxShadow: deleting ? 'none' : '0 4px 15px rgba(192, 57, 43, 0.55)',
+              transition: 'background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (!deleting) {
+                e.currentTarget.style.backgroundColor = '#922b21';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(192, 57, 43, 0.65)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!deleting) {
+                e.currentTarget.style.backgroundColor = '#c0392b';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(192, 57, 43, 0.55)';
+              }
+            }}
+          >
+            ELIMINAR CUENTA
+          </button>
+        </div>
+
+        {/* BOTÓN CERRAR SESIÓN */}
         <div style={{
           marginTop: '45px',
           display: 'flex',
@@ -504,9 +769,7 @@ export default function PerfilPage() {
               textTransform: 'uppercase' as const,
               fontFamily: "'Bungee', sans-serif",
               opacity: loggingOut ? 0.65 : 1,
-              boxShadow: loggingOut
-                ? 'none'
-                : '0 4px 15px rgba(231, 76, 60, 0.45)',
+              boxShadow: loggingOut ? 'none' : '0 4px 15px rgba(231, 76, 60, 0.45)',
               transition: 'background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease'
             }}
             onMouseEnter={(e) => {
@@ -527,55 +790,9 @@ export default function PerfilPage() {
             {loggingOut ? 'CERRANDO...' : 'CERRAR SESIÓN'}
           </button>
         </div>
-
-        {/* ========== BOTÓN ELIMINAR CUENTA ========== */}
-        <div style={{
-          marginTop: '45px',
-          display: 'flex',
-          justifyContent: 'center'
-        }}>
-          <button
-            onClick={() => setShowDeleteModal(true)}
-            disabled={deleting}
-            style={{
-              backgroundColor: deleting ? '#922b21' : '#e74c3c',
-              color: '#ffffff',
-              padding: '18px 56px',
-              borderRadius: '16px',
-              border: 'none',
-              fontSize: '18px',
-              fontWeight: 'bold',
-              cursor: deleting ? 'not-allowed' : 'pointer',
-              letterSpacing: '2px',
-              textTransform: 'uppercase' as const,
-              fontFamily: "'Bungee', sans-serif",
-              opacity: deleting ? 0.65 : 1,
-              boxShadow: deleting
-                ? 'none'
-                : '0 4px 15px rgba(192, 57, 43, 0.55)',
-              transition: 'background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              if (!deleting) {
-                e.currentTarget.style.backgroundColor = '#922b21';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(192, 57, 43, 0.65)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!deleting) {
-                e.currentTarget.style.backgroundColor = '#c0392b';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(192, 57, 43, 0.55)';
-              }
-            }}
-          >
-            ELIMINAR CUENTA
-          </button>
-        </div>
       </main>
 
-      {/* ========== MODAL DE CONFIRMACIÓN DE ELIMINACIÓN ========== */}
+      {/* MODAL DE ELIMINACIÓN */}
       {showDeleteModal && (
         <div style={{
           position: 'fixed',
@@ -605,8 +822,10 @@ export default function PerfilPage() {
             }}>
               <div style={{
                 fontSize: '64px',
-                marginBottom: '20px'
+                marginBottom: '20px',
+                color: '#c0392b'
               }}>
+                !
               </div>
               <h2 style={{
                 fontSize: '28px',
@@ -663,7 +882,7 @@ export default function PerfilPage() {
               fontFamily: "'Inter', sans-serif",
               fontWeight: 'bold'
             }}>
-              ¿Estás completamente seguro de que deseas continuar?
+              ¿Estás seguro de eliminar tu cuenta?
             </p>
 
             <div style={{ display: 'flex', gap: '15px' }}>
@@ -741,6 +960,17 @@ export default function PerfilPage() {
         </div>
       )}
 
+      {/* ANIMACIONES CSS */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from { transform: translateY(30px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -793,4 +1023,57 @@ const inputReadOnlyStyle = {
   fontWeight: '500' as const,
   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
   border: 'none'
+};
+
+const inputEditableStyle = {
+  width: '100%',
+  padding: '14px 20px',
+  borderRadius: '12px',
+  backgroundColor: '#ffffff',
+  color: '#1a1a1a',
+  fontSize: '16px',
+  fontFamily: "'Inter', 'Segoe UI', sans-serif",
+  fontWeight: '500' as const,
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+  border: '2px solid #33A6DF',
+  outline: 'none'
+};
+
+const editButtonStyle = {
+  padding: '10px 20px',
+  borderRadius: '10px',
+  backgroundColor: '#33A6DF',
+  color: '#ffffff',
+  border: 'none',
+  fontSize: '14px',
+  fontWeight: 'bold' as const,
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  fontFamily: "'Inter', sans-serif"
+};
+
+const saveButtonStyle = {
+  padding: '10px 16px',
+  borderRadius: '10px',
+  backgroundColor: '#27ae60',
+  color: '#ffffff',
+  border: 'none',
+  fontSize: '18px',
+  fontWeight: 'bold' as const,
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  minWidth: '45px'
+};
+
+const cancelButtonStyle = {
+  padding: '10px 16px',
+  borderRadius: '10px',
+  backgroundColor: '#e74c3c',
+  color: '#ffffff',
+  border: 'none',
+  fontSize: '18px',
+  fontWeight: 'bold' as const,
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  minWidth: '45px'
 };

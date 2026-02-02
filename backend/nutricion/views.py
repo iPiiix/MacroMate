@@ -9,7 +9,8 @@ from .serializers import ComidaDiariaSerializer, ComidaDiariaCreateSerializer
 from .utils import calcular_macros_para_perfil
 from usuarios.models import Perfil
 from django.db import transaction
-from datetime import date
+from datetime import date, datetime
+from decimal import Decimal
 
 
 # ========================================================
@@ -81,49 +82,93 @@ def obtener_macros_actuales(request):
 
 
 # ========================================================
-# ENDPOINT NUEVO: Comidas diarias
+# ENDPOINT NUEVO: Comidas diarias (GET y POST)
 # ========================================================
 
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'POST', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def comidas_view(request):
     """
-    Una sola dirección, dos funciones según el método:
-    - GET  /api/nutricion/comidas/?fecha=2026-01-31  → obtener comidas de un día
-    - POST /api/nutricion/comidas/                   → guardar una comida nueva
+    Una sola dirección, múltiples funciones según el método:
+    - GET    /api/nutricion/comidas/?fecha=2026-01-31  → obtener comidas de un día
+    - POST   /api/nutricion/comidas/                   → guardar una comida nueva
+    - DELETE /api/nutricion/comidas/<id>/              → eliminar una comida específica
     """
     if request.method == 'GET':
         return _obtener_comidas(request)
     elif request.method == 'POST':
         return _crear_comida(request)
+    elif request.method == 'DELETE':
+        return _eliminar_comida(request)
 
 
 def _obtener_comidas(request):
     """
-    Devuelve todas las comidas del usuario en una fecha.
-    Si no hay comidas ese día, devuelve lista vacía → el frontend muestra progreso en 0.
+    Devuelve todas las comidas del usuario en una fecha específica.
+    Si no hay comidas ese día, devuelve lista vacía.
+    
+    Query params:
+    - fecha (opcional): formato YYYY-MM-DD, por defecto es hoy
+    
+    Response:
+    [
+        {
+            "id": 1,
+            "nombre": "Pechuga de pollo",
+            "calorias": 250.0,
+            "proteinas": 30.0,
+            "carbohidratos": 0.0,
+            "grasas": 5.0,
+            "tipo_comida": "almuerzo"
+        },
+        ...
+    ]
     """
     fecha_param = request.query_params.get('fecha')
 
     if not fecha_param:
         fecha_buscar = date.today()
     else:
-        fecha_buscar = fecha_param
+        try:
+            fecha_buscar = datetime.strptime(fecha_param, '%Y-%m-%d').date()
+        except ValueError:
+            return Response(
+                {'error': 'Formato de fecha inválido. Use YYYY-MM-DD'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     try:
         perfil = Perfil.objects.get(id_usuario=request.user)
 
-        registro = RegistroDiario.objects.filter(
+        # Buscar o crear el registro diario para esa fecha
+        registro, creado = RegistroDiario.objects.get_or_create(
             id_perfil=perfil,
-            fecha=fecha_buscar
-        ).first()
+            fecha=fecha_buscar,
+            defaults={
+                'calorias_consumidas': 0,
+                'proteinas_consumidas': 0,
+                'carbohidratos_consumidos': 0,
+                'grasas_consumidas': 0,
+            }
+        )
 
-        if not registro:
-            return Response([])
-
+        # Obtener todas las comidas de ese día
         comidas = ComidaDiaria.objects.filter(id_registro=registro)
         serializer = ComidaDiariaSerializer(comidas, many=True)
-        return Response(serializer.data)
+        
+        # Calcular totales del día
+        totales = {
+            'calorias': float(registro.calorias_consumidas or 0),
+            'proteinas': float(registro.proteinas_consumidas or 0),
+            'carbohidratos': float(registro.carbohidratos_consumidos or 0),
+            'grasas': float(registro.grasas_consumidas or 0)
+        }
+        
+        return Response({
+            'comidas': serializer.data,
+            'totales': totales,
+            'fecha': fecha_buscar
+        })
 
     except Perfil.DoesNotExist:
         return Response(
@@ -134,10 +179,28 @@ def _obtener_comidas(request):
 
 def _crear_comida(request):
     """
-    Guarda una comida nueva.
-    1. Busca o crea el RegistroDiario de esa fecha
-    2. Crea una ComidaDiaria dentro de él
-    3. Devuelve la comida creada
+    Guarda una comida nueva y actualiza los totales del día.
+    
+    Body:
+    {
+        "nombre": "Pechuga de pollo",
+        "calorias": 250.0,
+        "proteinas": 30.0,
+        "carbohidratos": 0.0,
+        "grasas": 5.0,
+        "fecha": "2026-02-02"  (opcional, por defecto hoy)
+    }
+    
+    Response:
+    {
+        "id": 1,
+        "nombre": "Pechuga de pollo",
+        "calorias": 250.0,
+        "proteinas": 30.0,
+        "carbohidratos": 0.0,
+        "grasas": 5.0,
+        "tipo_comida": "snack"
+    }
     """
     serializer = ComidaDiariaCreateSerializer(data=request.data)
 
@@ -146,9 +209,19 @@ def _crear_comida(request):
 
     try:
         perfil = Perfil.objects.get(id_usuario=request.user)
-        fecha = serializer.validated_data['fecha']
+        
+        # Obtener fecha (hoy si no se especifica)
+        fecha_str = serializer.validated_data.get('fecha')
+        if fecha_str:
+            if isinstance(fecha_str, str):
+                fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+            else:
+                fecha = fecha_str
+        else:
+            fecha = date.today()
 
         with transaction.atomic():
+            # Buscar o crear el registro diario
             registro, creado = RegistroDiario.objects.get_or_create(
                 id_perfil=perfil,
                 fecha=fecha,
@@ -160,15 +233,23 @@ def _crear_comida(request):
                 }
             )
 
+            # Crear la comida
             comida = ComidaDiaria.objects.create(
                 id_registro=registro,
                 nombre=serializer.validated_data['nombre'],
-                calorias=serializer.validated_data['calorias'],
-                proteinas=serializer.validated_data['proteinas'],
-                carbohidratos=serializer.validated_data['carbohidratos'],
-                grasas=serializer.validated_data['grasas'],
+                calorias=Decimal(str(serializer.validated_data['calorias'])),
+                proteinas=Decimal(str(serializer.validated_data['proteinas'])),
+                carbohidratos=Decimal(str(serializer.validated_data['carbohidratos'])),
+                grasas=Decimal(str(serializer.validated_data['grasas'])),
                 tipo_comida='snack'
             )
+
+            # Actualizar los totales del registro diario
+            registro.calorias_consumidas = (registro.calorias_consumidas or 0) + comida.calorias
+            registro.proteinas_consumidas = (registro.proteinas_consumidas or 0) + comida.proteinas
+            registro.carbohidratos_consumidos = (registro.carbohidratos_consumidos or 0) + comida.carbohidratos
+            registro.grasas_consumidas = (registro.grasas_consumidas or 0) + comida.grasas
+            registro.save()
 
         return Response(
             ComidaDiariaSerializer(comida).data,
@@ -183,5 +264,74 @@ def _crear_comida(request):
     except Exception as e:
         return Response(
             {'error': f'Error al guardar comida: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+def _eliminar_comida(request):
+    """
+    Elimina una comida específica y actualiza los totales del día.
+    
+    URL: /api/nutricion/comidas/<id>/
+    
+    Response:
+    {
+        "message": "Comida eliminada correctamente"
+    }
+    """
+    comida_id = request.query_params.get('id')
+    
+    if not comida_id:
+        return Response(
+            {'error': 'ID de comida requerido'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        perfil = Perfil.objects.get(id_usuario=request.user)
+        
+        # Buscar la comida y verificar que pertenece al usuario
+        comida = ComidaDiaria.objects.select_related('id_registro').get(
+            id=comida_id,
+            id_registro__id_perfil=perfil
+        )
+        
+        with transaction.atomic():
+            # Actualizar los totales del registro diario
+            registro = comida.id_registro
+            registro.calorias_consumidas = (registro.calorias_consumidas or 0) - (comida.calorias or 0)
+            registro.proteinas_consumidas = (registro.proteinas_consumidas or 0) - (comida.proteinas or 0)
+            registro.carbohidratos_consumidos = (registro.carbohidratos_consumidos or 0) - (comida.carbohidratos or 0)
+            registro.grasas_consumidas = (registro.grasas_consumidas or 0) - (comida.grasas or 0)
+            
+            # Asegurar que no queden valores negativos
+            registro.calorias_consumidas = max(0, registro.calorias_consumidas)
+            registro.proteinas_consumidas = max(0, registro.proteinas_consumidas)
+            registro.carbohidratos_consumidos = max(0, registro.carbohidratos_consumidos)
+            registro.grasas_consumidas = max(0, registro.grasas_consumidas)
+            
+            registro.save()
+            
+            # Eliminar la comida
+            comida.delete()
+
+        return Response(
+            {'message': 'Comida eliminada correctamente'},
+            status=status.HTTP_200_OK
+        )
+
+    except ComidaDiaria.DoesNotExist:
+        return Response(
+            {'error': 'Comida no encontrada'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Perfil.DoesNotExist:
+        return Response(
+            {'error': 'Perfil no encontrado'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {'error': f'Error al eliminar comida: {str(e)}'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
