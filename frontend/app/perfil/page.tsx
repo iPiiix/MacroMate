@@ -613,7 +613,11 @@ export default function PerfilPage() {
                       onClick={handleStartEditPeso}
                       style={editButtonStyle}
                     >
-                      ✏️ Editar
+                      <img 
+                        src="/icons8-lápiz-16.png" 
+                        alt="Editar" 
+                        style={{ width: '16px', height: '16px', marginRight: '5px' }} 
+                      /> 
                     </button>
                   </div>
                 )}
@@ -673,7 +677,11 @@ export default function PerfilPage() {
                       onClick={handleStartEditActividad}
                       style={editButtonStyle}
                     >
-                      ✏️ Editar
+                      <img 
+                          src="/icons8-lápiz-16.png" 
+                          alt="Editar" 
+                          style={{ width: '16px', height: '16px', marginRight: '5px' }} 
+                        /> 
                     </button>
                   </div>
                 )}
@@ -1049,7 +1057,12 @@ const editButtonStyle = {
   fontWeight: 'bold' as const,
   cursor: 'pointer',
   transition: 'all 0.2s ease',
-  fontFamily: "'Inter', sans-serif"
+  fontFamily: "'Inter', sans-serif",
+  display: 'flex',           
+  alignItems: 'center',      
+  gap: '8px',               
+  justifyContent: 'center'  
+
 };
 
 const saveButtonStyle = {
