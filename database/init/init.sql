@@ -1,6 +1,3 @@
--- BASE DE DATOS MACROMATE (MVP ESTRICTO)
--- Solo lo necesario para Login, Perfil y Registro Manual de Macros
-
 CREATE DATABASE IF NOT EXISTS macromate CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE macromate;
 
@@ -29,7 +26,7 @@ CREATE TABLE perfiles (
     genero VARCHAR(20) NULL,
     altura DECIMAL(5,2) NULL, -- cm
     peso_actual DECIMAL(5,2) NULL, -- kg
-    peso_objetivo DECIMAL(5,2) NULL, -- Para MVP, puede ser igual al actual
+    peso_objetivo DECIMAL(5,2) NULL,
     nivel_actividad VARCHAR(20) DEFAULT 'sedentario',
     objetivo VARCHAR(20) DEFAULT 'mantenimiento',
     bmr DECIMAL(7,2) NULL,
@@ -59,7 +56,6 @@ CREATE TABLE registro_diario (
     id_perfil INT NOT NULL,
     id_macro_objetivo INT NULL,
     fecha DATE NOT NULL,
-    -- Estos son acumuladores. Se suman cada vez que añades una comida.
     calorias_consumidas DECIMAL(7,2) DEFAULT 0,
     proteinas_consumidas DECIMAL(6,2) DEFAULT 0,
     carbohidratos_consumidos DECIMAL(6,2) DEFAULT 0,
@@ -73,8 +69,8 @@ CREATE TABLE registro_diario (
 CREATE TABLE comidas_diarias (
     id_comida INT PRIMARY KEY AUTO_INCREMENT,
     id_registro INT NOT NULL,
-    tipo_comida VARCHAR(20) NOT NULL DEFAULT 'snack', -- desayuno, almuerzo, etc.
-    nombre VARCHAR(200) NOT NULL, -- Ej: "Pollo con arroz"
+    tipo_comida VARCHAR(20) NOT NULL DEFAULT 'snack', 
+    nombre VARCHAR(200) NOT NULL, 
     calorias DECIMAL(7,2) NULL,
     proteinas DECIMAL(6,2) NULL,
     carbohidratos DECIMAL(6,2) NULL,

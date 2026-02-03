@@ -126,33 +126,40 @@ export default function MacrosPage() {
 
   // ==================== DISTRIBUCIÓN DE MACROS ====================
   
-  const calculateMacroDistribution = (calorias: number, objetivo: string): MacroGoals => {
-    let proteinPercent = 0.30;
-    let carbPercent = 0.40;
-    let fatPercent = 0.30;
-    
-    if (objetivo === 'perdida_peso') {
-      proteinPercent = 0.40;
-      carbPercent = 0.30;
-      fatPercent = 0.30;
-    } else if (objetivo === 'ganancia_muscular') {
-      proteinPercent = 0.35;
-      carbPercent = 0.45;
-      fatPercent = 0.20;
-    }
-    
-    const proteinas = Math.round((calorias * proteinPercent) / 4);
-    const carbohidratos = Math.round((calorias * carbPercent) / 4);
-    const grasas = Math.round((calorias * fatPercent) / 9);
-    
-    return {
-      calorias: Math.round(calorias),
-      proteinas,
-      carbohidratos,
-      grasas
-    };
-  };
+const calculateMacroDistribution = (calorias: number, peso: number, objetivo: string): MacroGoals => {
+    let proteinGramsPerKg;
+    let fatGramsPerKg;
 
+    if (objetivo === 'perdida_peso') {
+        proteinGramsPerKg = 2.2; 
+        fatGramsPerKg = 0.8; 
+    } else if (objetivo === 'ganancia_muscular') {
+        proteinGramsPerKg = 2.0; 
+        fatGramsPerKg = 1.0; 
+    } else {
+        proteinGramsPerKg = 1.8;
+        fatGramsPerKg = 0.9;
+    }
+
+    let proteinas = Math.round(peso * proteinGramsPerKg);
+    let grasas = Math.round(peso * fatGramsPerKg);
+
+    // (Proteína = 4 kcal/g, Grasa = 9 kcal/g)
+    const caloriasOcupadas = (proteinas * 4) + (grasas * 9);
+    const caloriasRestantes = calorias - caloriasOcupadas;
+
+    let carbohidratos = 0;
+    if (caloriasRestantes > 0) {
+        carbohidratos = Math.round(caloriasRestantes / 4);
+    }
+
+    return {
+        calorias: Math.round(calorias),
+        proteinas,
+        carbohidratos,
+        grasas
+    };
+};
   // ==================== CARGAR COMIDAS DESDE EL SERVIDOR ====================
   
   const loadComidasFromServer = async (token: string) => {
@@ -217,7 +224,7 @@ export default function MacrosPage() {
         const bmr = calculateBMR(profile);
         const tdee = calculateTDEE(bmr, profile.nivel_actividad);
         const caloriasAjustadas = adjustCaloriesByGoal(tdee, profile.objetivo);
-        const macros = calculateMacroDistribution(caloriasAjustadas, profile.objetivo);
+        const macros = calculateMacroDistribution(caloriasAjustadas, profile.peso_actual, profile.objetivo);
         
         setMacroGoals(macros);
 
