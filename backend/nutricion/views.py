@@ -66,7 +66,6 @@ def obtener_macros_actuales(request):
                 'proteinas': macros.proteinas,
                 'carbohidratos': macros.carbohidratos,
                 'grasas': macros.grasas,
-                'fecha_calculo': macros.fecha_calculo
             })
         else:
             return Response(

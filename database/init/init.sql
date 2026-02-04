@@ -45,7 +45,6 @@ CREATE TABLE macronutrientes (
     proteinas DECIMAL(6,2) NULL,
     carbohidratos DECIMAL(6,2) NULL,
     grasas DECIMAL(6,2) NULL,
-    fecha_calculo DATE NOT NULL,
     activo BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (id_perfil) REFERENCES perfiles(id_perfil) ON DELETE CASCADE
 );
