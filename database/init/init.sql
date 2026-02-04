@@ -26,7 +26,6 @@ CREATE TABLE perfiles (
     genero VARCHAR(20) NULL,
     altura DECIMAL(5,2) NULL, -- cm
     peso_actual DECIMAL(5,2) NULL, -- kg
-    peso_objetivo DECIMAL(5,2) NULL,
     nivel_actividad VARCHAR(20) DEFAULT 'sedentario',
     objetivo VARCHAR(20) DEFAULT 'mantenimiento',
     bmr DECIMAL(7,2) NULL,
