@@ -58,7 +58,6 @@ CREATE TABLE registro_diario (
     proteinas_consumidas DECIMAL(6,2) DEFAULT 0,
     carbohidratos_consumidos DECIMAL(6,2) DEFAULT 0,
     grasas_consumidas DECIMAL(6,2) DEFAULT 0,
-    agua_litros DECIMAL(4,2) DEFAULT 0,
     FOREIGN KEY (id_perfil) REFERENCES perfiles(id_perfil) ON DELETE CASCADE,
     FOREIGN KEY (id_macro_objetivo) REFERENCES macronutrientes(id_macro) ON DELETE SET NULL,
     UNIQUE KEY unique_registro_perfil_fecha (id_perfil, fecha)
