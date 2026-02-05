@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import Usuario, Perfil
 
-# Registramos el modelo de Usuario personalizado
+# Registramos el modelo de Usuario 
 @admin.register(Usuario)
 class UsuarioAdmin(UserAdmin):  
     list_display = ('id_usuario', 'nombre_usuario', 'email', 'fecha_creacion', 'is_active', 'is_staff')

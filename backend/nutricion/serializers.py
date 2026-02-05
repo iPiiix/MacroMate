@@ -1,5 +1,3 @@
-# backend/nutricion/serializers.py
-
 from rest_framework import serializers
 from .models import ComidaDiaria, RegistroDiario
 
@@ -12,7 +10,6 @@ class ComidaDiariaSerializer(serializers.ModelSerializer):
 
 class ComidaDiariaCreateSerializer(serializers.Serializer):
     """
-    Serializer especial para crear comidas.
     Recibe los datos que envía el frontend y los valida.
     """
     nombre = serializers.CharField(max_length=200)
@@ -20,4 +17,4 @@ class ComidaDiariaCreateSerializer(serializers.Serializer):
     proteinas = serializers.FloatField(min_value=0)
     carbohidratos = serializers.FloatField(min_value=0)
     grasas = serializers.FloatField(min_value=0)
-    fecha = serializers.DateField(required=False)  # Opcional, por defecto hoy
+    fecha = serializers.DateField(required=False) 

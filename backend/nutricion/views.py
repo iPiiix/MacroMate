@@ -14,7 +14,7 @@ from decimal import Decimal
 
 
 # ========================================================
-# ENDPOINTS ORIGINALES (no se cambia nada)
+# ENDPOINTS 
 # ========================================================
 
 @api_view(['POST'])
@@ -81,18 +81,12 @@ def obtener_macros_actuales(request):
 
 
 # ========================================================
-# ENDPOINT NUEVO: Comidas diarias (GET y POST)
+# ENDPOINT: Comidas diarias 
 # ========================================================
 
 @api_view(['GET', 'POST', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def comidas_view(request):
-    """
-    Una sola dirección, múltiples funciones según el método:
-    - GET    /api/nutricion/comidas/?fecha=2026-01-31  → obtener comidas de un día
-    - POST   /api/nutricion/comidas/                   → guardar una comida nueva
-    - DELETE /api/nutricion/comidas/<id>/              → eliminar una comida específica
-    """
     if request.method == 'GET':
         return _obtener_comidas(request)
     elif request.method == 'POST':
@@ -102,27 +96,7 @@ def comidas_view(request):
 
 
 def _obtener_comidas(request):
-    """
-    Devuelve todas las comidas del usuario en una fecha específica.
-    Si no hay comidas ese día, devuelve lista vacía.
-    
-    Query params:
-    - fecha (opcional): formato YYYY-MM-DD, por defecto es hoy
-    
-    Response:
-    [
-        {
-            "id": 1,
-            "nombre": "Pechuga de pollo",
-            "calorias": 250.0,
-            "proteinas": 30.0,
-            "carbohidratos": 0.0,
-            "grasas": 5.0,
-            "tipo_comida": "almuerzo"
-        },
-        ...
-    ]
-    """
+
     fecha_param = request.query_params.get('fecha')
 
     if not fecha_param:
@@ -135,7 +109,6 @@ def _obtener_comidas(request):
                 {'error': 'Formato de fecha inválido. Use YYYY-MM-DD'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
     try:
         perfil = Perfil.objects.get(id_usuario=request.user)
 
