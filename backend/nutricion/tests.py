@@ -1,29 +1,31 @@
 from django.test import TestCase
 from datetime import date
 from unittest.mock import MagicMock
-from .utils import calcular_bmr, calcular_tdee, distribuir_macronutrientes, calcular_edad, ajustar_calorias_objetivo
+from .utils import calcular_bmr, calcular_tdee, distribuir_macronutrientes, ajustar_calorias_objetivo
+
+today = date.today()
+
+fecha_nac_hombre = date(today.year - 30, 1, 1)
 
 perfil_hombre = MagicMock(
     peso_actual=80.0,
     altura=180.0,
     genero='masculino',
-    fecha_nacimiento=date(1995, 1, 1), 
+    fecha_nacimiento=fecha_nac_hombre, 
     nivel_actividad='sedentario',
-    objetivo='mantenimiento',
-    calcular_edad=MagicMock(return_value=30)
+    objetivo='mantenimiento'
 )
-perfil_hombre.calcular_edad.return_value = 30
+
+fecha_nac_mujer = date(today.year - 25, 1, 1)
 
 perfil_mujer = MagicMock(
     peso_actual=60.0,
     altura=165.0,
     genero='femenino',
-    fecha_nacimiento=date(2000, 1, 1), 
+    fecha_nacimiento=fecha_nac_mujer, 
     nivel_actividad='muy_activo',
-    objetivo='perdida_peso',
-    calcular_edad=MagicMock(return_value=25)
+    objetivo='perdida_peso'
 )
-perfil_mujer.calcular_edad.return_value = 25 
 
 class NutricionUtilsTestCase(TestCase):
     def test_calcular_bmr_male(self):
@@ -43,7 +45,6 @@ class NutricionUtilsTestCase(TestCase):
         tdee = 2500
         objetivo = 'perdida_peso'
         calorias_objetivo = ajustar_calorias_objetivo(tdee, objetivo)
-
         self.assertAlmostEqual(calorias_objetivo, 2000, delta=1.0)
 
     def test_distribuir_macronutrientes_ganancia(self):
