@@ -1,193 +1,116 @@
-# MacroMate MVP – Smart Nutrition
+# MacroMate: Plataforma de Gestión Nutricional
+### Proyecto de Fin de Ciclo – Desarrollo de Aplicaciones Multiplataforma
 
-**Django · React · SQLite/MySQL · Python**
-
-![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white) ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) ![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white) ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-
-
-Sistema mínimo viable (MVP) para seguimiento nutricional y cálculo de macronutrientes.
-
-Proyecto Académico – Desarrollo de Aplicaciones Multiplataforma
-Curso 2025–2026
+![Django](https://img.shields.io/badge/Backend-Django_REST-092E20?style=for-the-badge&logo=django&logoColor=white)
+![Next.js](https://img.shields.io/badge/Frontend-Next.js_13-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![Python](https://img.shields.io/badge/Core-Python_3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)
 
 ---
 
-## Enfoque del MVP
+## Resumen del Proyecto
 
-MacroMate evoluciona a una versión **MVP** con un objetivo claro: **menos funcionalidades, mayor estabilidad y calidad técnica**.
+**MacroMate** es una aplicación web *Full-Stack* desarrollada como proyecto final para el ciclo de Desarrollo de Aplicaciones Multiplataforma (DAM).
 
-Se prioriza:
-
-* Correcto funcionamiento 
-* Código mantenible y comprensible
-* Funcionalidades nucleares bien implementadas
-
-Todo lo no crítico (gamificación avanzada, recetas complejas, IA conversacional persistente, etc.) queda fuera de esta iteración.
+El objetivo principal de este proyecto es demostrar la capacidad de integración entre un backend robusto basado en **Python/Django** y un frontend moderno y reactivo construido con **Next.js**. La aplicación permite a los usuarios gestionar su perfil antropométrico, calcular automáticamente sus necesidades calóricas (BMR/TDEE) mediante algoritmos validados y realizar un seguimiento de su ingesta de macronutrientes.
 
 ---
 
-## Funcionalidades Incluidas
+## Objetivos 
 
-### Features Introducidas
+Este desarrollo persigue los siguientes hitos técnicos y educativos:
 
-* **Autenticación de usuarios**
-
-  * Registro, login y logout
-  * Gestión básica de perfil
-
-* **Perfil nutricional**
-
-  * Datos físicos del usuario
-  * Selección de objetivo (pérdida, mantenimiento, ganancia)
-
-* **Cálculo automático**
-
-  * BMR (Tasa Metabólica Basal)
-  * TDEE (Gasto Energético Total Diario)
-  * Calorías y macronutrientes diarios
-
-* **Dashboard básico**
-
-  * Visualización de calorías y macros
-  * Estado diario de consumo (resumen)
-
-### Lo que ya no se va a incluir en el MVP
-
-* Chatbot IA persistente
-* Sistema de gamificación
-* Registro detallado de recetas
-* Seguimiento avanzado de ejercicios
-* Recomendaciones automáticas 
-
-Estas funcionalidades quedan documentadas pero sin implementar
+1.  **Desacoplamiento de Arquitectura**: Implementación de una arquitectura Cliente-Servidor separada, comunicándose exclusivamente mediante **API REST** (JSON).
+2.  **Seguridad Avanzada**: Implementación de autenticación *stateless* mediante **JWT (JSON Web Tokens)** con rotación de tokens y listas negras de revocación.
+3.  **Algoritmia en Backend**: Desarrollo de lógica de negocio compleja en el servidor (fórmulas Mifflin-St Jeor) en lugar de delegar cálculos críticos al cliente.
+4.  **Gestión de Estado**: Uso de Hooks y Context API en React para el manejo de sesiones y datos de usuario.
+5.  **Persistencia de Datos**: Diseño de un modelo relacional normalizado (SQLite para desarrollo) gestionado a través del ORM de Django.
 
 ---
 
-## Arquitectura
+## Stack 
 
-Arquitectura **frontend / backend desacoplada**, orientada a simplicidad y claridad.
-
-### Stack Tecnológico
-
-| Capa                 | Tecnología                             |
-| -------------------- | -------------------------------------- |
-| Frontend             | React + Vite + Tailwind CSS            |
-| Backend              | Django + Django REST Framework         |
-| Base de Datos        | SQLite (desarrollo)                    |
-| Autenticación        | JWT (SimpleJWT)                        |
-| Control de versiones | Git + GitHub                           |
+| Capa | Tecnología | Justificación Técnica |
+| :--- | :--- | :--- |
+| **Backend** | Django 5.x + DRF | Framework de alto nivel que garantiza seguridad por defecto y rapidez en el desarrollo de APIs. |
+| **Frontend** | Next.js 13+ (App Router) | Permite renderizado híbrido y optimización de rutas, estándar actual en la industria React. |
+| **Base de Datos** | SQLite | Base de datos relacional ligera, ideal para prototipado y portabilidad del proyecto académico. |
+| **Estilos** | Tailwind CSS | Framework de utilidades para un diseño responsivo sin sobrecarga de archivos CSS. |
+| **Control de Versiones** | Git / GitHub | Gestión de ramas y control de cambios colaborativo. |
 
 ---
 
-## Estructura del Proyecto
+## Arquitectura Principal del Sistema
 
-```
+El proyecto sigue una estructura modular. A continuación se detalla la organización del código fuente entregado:
+
+```text
 MacroMate/
-├── backend/
-│   ├── users/
-│   ├── profiles/
-│   ├── nutrition/
-│   ├── config/
-│   └── manage.py
-├── docs/
-│   └── README.md
-│ 
-├── frontend/
+├── backend/                  # Servidor API (Django)
+│   ├── macromate/            # Configuración global (settings, cors, jwt)
+│   ├── usuarios/             # App: Modelos personalizados (Usuario, Perfil) y Auth
+│   ├── nutricion/            # App: Lógica de cálculo (utils.py) y endpoints de macros
+│   ├── alimentos/            # App: Base de datos de alimentos
+│   └── manage.py             # Script de gestión del framework
+│
+├── app/                      # Cliente Web (Next.js)
+│   ├── (auth)/               # Rutas de autenticación (Login/Registro)
+│   ├── dashboard/            # Panel principal de usuario
+│   ├── perfil/               # Formularios de edición de datos físicos
+│   └── components/           # Componentes reutilizables (UI)
+│
+├── database/                 # Esquema de base de datos (migrations)
+│     └── init.sql            # Script de inicialización (SQLite)
+└── docs/                     # Documentación técnica y memoria
 
->Frontend no esta realizado todavia
 
 ```
-
 ---
 
-## Instalación Rápida (Desarrollo)
+## Guia de Despliegue
+Para la evaluación del proyecto, se recomienda seguir los siguientes pasos de instalación manual para garantizar la correcta configuración del entorno.
 
-### Prerrequisitos
+Requisitos previos:
+  - Python 3.11+
+  - Node.js 18+
 
-* Python 3.11+
-* Node.js 18+
-* Git
-
-### Backend
-
+1 - Inicialización del Backend 
 ```bash
-# Clonar repositorio
-cd MacroMate/backend
+# Acceder al directorio del servidor
+cd backend
 
-# Crear entorno virtual
+# Crear entorno virtual (Recomendado)
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+# Activar: .\venv\Scripts\activate (Windows) o source venv/bin/activate (Mac/Linux)
 
-# Instalar dependencias
+# Instalar dependencias del proyecto
 pip install -r requirements.txt
 
-# Migraciones
+# Aplicar el esquema de base de datos
 python manage.py migrate
 
-# Crear superusuario
+# Crear administrador para el panel de control
 python manage.py createsuperuser
 
-# Ejecutar servidor
+# Iniciar el servidor de desarrollo (Puerto 8000)
 python manage.py runserver
 ```
+2 - Inicialización del Frontend
+```bash 
+# En una nueva terminal, acceder a la raíz del frontend (donde está package.json)
 
-# Navegación del Proyecto
+# Instalar dependencias de Node
+npm install next
 
-## Enlaces de la Aplicación
-
-### Páginas Principales
-- **Inicio de Sesión**: `http://localhost:3000/login`
-- **Registro**: `http://localhost:3000/register`
-- **Dashboard/Home**: `http://localhost:3000/dashboard` (requiere autenticación)
-- **Perfil**: `http://localhost:3000/profile` (requiere autenticación)
-- **[Otra página]**: `http://localhost:3000/[ruta]` (requiere autenticación)
-
-### Panel de Administración Django
-Para acceder al panel de administración de Django:
-
-1. **URL**: `http://localhost:8000/admin`
-2. **Credenciales**: 
-   - Usuario: (el superusuario que hayas creado)
-   - Contraseña: (la contraseña que se estableció)
-
+# Iniciar el servidor de desarrollo (Puerto 3000)
+npm run dev
+```
 ---
 
-## Objetivo Académico
+## Autores 
+Proyecto Integrado - Curso 2025/2026 IES Infanta Elena - Desarrollo de Aplicaciones Multiplataforma
 
-Este MVP está diseñado para:
+- Santiago Pérez Guerrero
+- Juan José Cardona Ospina
 
-* Demostrar dominio del stack full‑stack
-* Aplicar arquitectura limpia y modular
-* Cumplir requisitos funcionales clave sin sobreingeniería
-
-Se ha priorizado la calidad tecnologica y estabilidad sobre la cantidad de funcionalidades
-
----
-
-
-## Equipo
-
-* **Santiago Pérez Guerrero**
-* **Juan José Cardona Ospina**
-
-IES Infanta Elena
-Desarrollo de Aplicaciones Multiplataforma
-Curso 2025–2026
-
----
-
-## Contacto
-
-Email: [1913555@alu.murciaeduca.es](mailto:1913555@alu.murciaeduca.es)
-
-Email: [13763596@alu.murciaeduca.es](mailto:13763596@alu.murciaeduca.es)
-
-Institución: IES Infanta Elena [https://iesinfantaelena.es](https://iesinfantaelena.es)
-
----
-
-## Licencia
-Licencia documentada en el archivo **LICENSE.md**
-
-© 2025–2026 MacroMate – Smart Nutrition
-Proyecto académico desarrollado para fines educativos. 
+>---
+> **Nota**: Este proyecto es una entrega académica y no debe ser utilizado con fines comerciales sin la debida autorización de los autores. Cualquier uso indebido será responsabilidad exclusiva del usuario.
