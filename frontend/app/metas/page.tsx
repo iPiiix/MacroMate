@@ -5,21 +5,15 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
-/**
- * MetasPage - Página de selección y cambio de meta física
- */
 export default function MetasPage() {
   const router = useRouter();
   
   // ==================== ESTADOS DEL COMPONENTE ====================
-  
   const [showModal, setShowModal] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [currentGoal, setCurrentGoal] = useState<string | null>(null);
 
-  // ==================== EFECTO INICIAL ====================
-  
   useEffect(() => {
     const fetchCurrentGoal = async () => {
       try {
@@ -48,7 +42,6 @@ export default function MetasPage() {
   }, [router]);
 
   // ==================== MANEJADORES DE NAVEGACIÓN ====================
-
   const handlePaginaPrincipalClick = () => {
     router.push('/paginaPrincipal');
   };
@@ -65,7 +58,6 @@ export default function MetasPage() {
     router.push('/perfil');
   };
 
-  // ==================== MANEJADORES DE META ====================
 
   const handleGoalClick = (goal: string) => {
     setSelectedGoal(goal);
@@ -131,7 +123,6 @@ export default function MetasPage() {
   };
 
   // ==================== RENDERIZADO ====================
-
   return (
     <div style={{
       fontFamily: "'Bungee', -apple-system, BlinkMacSystemFont, sans-serif",
@@ -151,7 +142,6 @@ export default function MetasPage() {
         top: 0,
         zIndex: 1000
       }}>
-        {/* Logo MacroMate */}
         <div 
           onClick={handlePaginaPrincipalClick}
           style={{ 
@@ -196,13 +186,11 @@ export default function MetasPage() {
           </span>
         </div>
 
-        {/* Iconos de navegación */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '85px'
         }}>
-          {/* Icono 1: Metas */}
           <div 
             onClick={handleMetasClick}
             style={{
@@ -236,8 +224,6 @@ export default function MetasPage() {
               />
             </div>
           </div>
-
-          {/* Icono 2: Progreso de macros */}
           <div 
             onClick={handleMacrosClick}
             style={{
@@ -272,7 +258,6 @@ export default function MetasPage() {
             </div>
           </div>
 
-          {/* Icono 3: Perfil */}
           <div 
             onClick={handlePerfilClick}
             style={{
@@ -310,7 +295,7 @@ export default function MetasPage() {
         </div>
       </header>
 
-      {/* ========== CONTENIDO PRINCIPAL - TARJETAS DE METAS ========== */}
+      {/* ========== CONTENIDO PRINCIPAL ========= */}
       <main style={{
         padding: '60px 40px',
         maxWidth: '1400px',
@@ -336,7 +321,7 @@ export default function MetasPage() {
           gap: '40px',
           marginBottom: '40px'
         }}>
-          {/* ========== TARJETA 1: PERDER PESO ========== */}
+          {/* ========== PERDER PESO ========== */}
           <div style={{
             backgroundColor: '#33A6DF',
             borderRadius: '30px',
@@ -409,7 +394,7 @@ export default function MetasPage() {
             </button>
           </div>
 
-          {/* ========== TARJETA 2: GANAR MASA MUSCULAR ========== */}
+          {/* ========== GANAR MASA MUSCULAR ========== */}
           <div style={{
             backgroundColor: '#33A6DF',
             borderRadius: '30px',
@@ -482,7 +467,7 @@ export default function MetasPage() {
           </div>
         </div>
 
-        {/* ========== TARJETA 3: MANTENER FÍSICO (CENTRADA) ========== */}
+        {/* ========== MANTENER FÍSICO ========== */}
         <div style={{
           display: 'flex',
           justifyContent: 'center'

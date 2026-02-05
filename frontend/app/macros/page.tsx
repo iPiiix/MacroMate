@@ -5,16 +5,6 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
-/**
- * MacrosPage - Página de seguimiento de macronutrientes
- * 
- * CAMBIOS IMPLEMENTADOS:
- * - Persistencia de datos en base de datos SQLite (backend Django)
- * - Carga de comidas desde el servidor al iniciar
- * - Guardado automático de cada comida en el servidor
- * - Sincronización en tiempo real entre frontend y backend
- */
-
 interface UserProfile {
   nombre: string;
   apellidos: string;
@@ -144,7 +134,6 @@ const calculateMacroDistribution = (calorias: number, peso: number, objetivo: st
     let proteinas = Math.round(peso * proteinGramsPerKg);
     let grasas = Math.round(peso * fatGramsPerKg);
 
-    // (Proteína = 4 kcal/g, Grasa = 9 kcal/g)
     const caloriasOcupadas = (proteinas * 4) + (grasas * 9);
     const caloriasRestantes = calorias - caloriasOcupadas;
 
@@ -164,7 +153,7 @@ const calculateMacroDistribution = (calorias: number, peso: number, objetivo: st
   
   const loadComidasFromServer = async (token: string) => {
     try {
-      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const today = new Date().toISOString().split('T')[0]; 
       
       const response = await fetch(`http://localhost:8000/api/nutricion/comidas/?fecha=${today}`, {
         headers: {
@@ -189,7 +178,6 @@ const calculateMacroDistribution = (calorias: number, peso: number, objetivo: st
 
     } catch (error) {
       console.error('Error al cargar comidas:', error);
-      // No mostrar error al usuario si es la primera vez del día
     }
   };
 
@@ -793,7 +781,7 @@ const calculateMacroDistribution = (calorias: number, peso: number, objetivo: st
         )}
       </main>
 
-      {/* ========== MODAL AÑADIR COMIDA ========== */}
+      {/* ========== AÑADIR COMIDA ========== */}
       {showAddFoodModal && (
         <div style={{
           position: 'fixed',

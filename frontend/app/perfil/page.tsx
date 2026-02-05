@@ -5,15 +5,6 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
-/**
- * PerfilPage - Página de visualización y edición del perfil del usuario
- * 
- * NUEVAS FUNCIONALIDADES:
- * - Editar peso actual
- * - Editar nivel de actividad física
- * - Recalcular BMR y TDEE automáticamente
- */
-
 interface UserProfile {
   nombre: string;
   apellidos: string;
@@ -40,14 +31,12 @@ export default function PerfilPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   
-  // Estados para edición
   const [editingPeso, setEditingPeso] = useState(false);
   const [editingActividad, setEditingActividad] = useState(false);
   const [tempPeso, setTempPeso] = useState('');
   const [tempActividad, setTempActividad] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // ==================== ELIMINACIÓN DE USUARIO ====================
 
   const handleDeleteAccount = async () => {
     setDeleting(true);
@@ -84,8 +73,7 @@ export default function PerfilPage() {
     }
   };
 
-  // ==================== CÁLCULO DE BMR ====================
-  
+  // CÁLCULO DE BMR 
   const calculateBMR = (profile: UserProfile): number => {
     const edad = new Date().getFullYear() - new Date(profile.fecha_nacimiento).getFullYear();
     
@@ -96,7 +84,7 @@ export default function PerfilPage() {
     }
   };
 
-  // ==================== CÁLCULO DE TDEE ====================
+  // CÁLCULO DE TDEE 
   
   const calculateTDEE = (bmr: number, nivelActividad: string): number => {
     const factoresActividad: Record<string, number> = {
@@ -110,8 +98,7 @@ export default function PerfilPage() {
     return bmr * (factoresActividad[nivelActividad] || 1.2);
   };
 
-  // ==================== CARGA INICIAL DE DATOS ====================
-  
+  // CARGA INICIAL DE DATOS
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -154,7 +141,7 @@ export default function PerfilPage() {
     fetchUserProfile();
   }, [router]);
 
-  // ==================== EDICIÓN DE PESO ====================
+  // EDICIÓN DE PESO 
 
   const handleStartEditPeso = () => {
     setTempPeso(userProfile?.peso_actual.toString() || '');
@@ -220,7 +207,7 @@ export default function PerfilPage() {
     }
   };
 
-  // ==================== EDICIÓN DE ACTIVIDAD FÍSICA ====================
+  //  EDICIÓN DE ACTIVIDAD FÍSICA 
 
   const handleStartEditActividad = () => {
     setTempActividad(userProfile?.nivel_actividad || '');
@@ -279,7 +266,7 @@ export default function PerfilPage() {
     }
   };
 
-  // ==================== MANEJADORES DE NAVEGACIÓN ====================
+  // MANEJADORES DE NAVEGACIÓN
 
   const handlePaginaPrincipalClick = () => {
     router.push('/paginaPrincipal');
@@ -297,8 +284,7 @@ export default function PerfilPage() {
     router.push('/perfil');
   };
 
-  // ==================== CERRAR SESIÓN ====================
-  
+  //  CERRAR SESIÓN 
   const handleLogout = async () => {
     setLoggingOut(true);
 
@@ -341,7 +327,7 @@ export default function PerfilPage() {
     }
   };
 
-  // ==================== FUNCIONES DE FORMATO ====================
+  // FUNCIONES DE FORMATO
 
   const formatFechaNacimiento = (fecha: string): string => {
     const date = new Date(fecha);
@@ -381,8 +367,7 @@ export default function PerfilPage() {
     return objetivos[objetivo] || objetivo;
   };
 
-  // ==================== RENDERIZADO ====================
-
+  // RENDERIZADO 
   if (loading) {
     return (
       <div style={{
@@ -424,7 +409,7 @@ export default function PerfilPage() {
       minHeight: '100vh',
       color: '#ffffff'
     }}>
-      {/* ========== HEADER CON NAVEGACIÓN ========== */}
+      {/*  HEADER CON NAVEGACIÓN  */}
       <header style={{
         backgroundColor: '#222222ff',
         padding: '15px 30px',
@@ -570,7 +555,7 @@ export default function PerfilPage() {
                 </div>
               </div>
 
-              {/* PESO (editable)*/}
+              {/* PESO */}
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>PESO:</label>
                 {editingPeso ? (
@@ -633,7 +618,7 @@ export default function PerfilPage() {
                 </div>
               </div>
 
-              {/* NIVEL DE ACTIVIDAD (editable) */}
+              {/* NIVEL DE ACTIVIDAD  */}
               <div style={fieldContainerStyle}>
                 <label style={labelStyle}>NIVEL DE ACTIVIDAD:</label>
                 {editingActividad ? (

@@ -3,21 +3,10 @@
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
-/**
- * HomePage - Página de inicio de MacroMate
- * 
- * Esta es la landing page principal que muestra:
- * - Header con navegación a diferentes secciones
- * - Sección hero con mensaje motivacional
- * - Sección de seguimiento de progreso
- * - Footer con información y enlaces
- * 
- * Diseño: Fondo oscuro (#2b2b2b) con secciones destacadas
- */
 export default function HomePage() {
   const router = useRouter();
 
-  // ==================== MANEJADORES DE NAVEGACIÓN ====================
+  // MANEJADORES DE NAVEGACIÓN 
 
   const handlePaginaPrincipalClick = () => {
     router.push('/paginaPrincipal');
@@ -35,7 +24,7 @@ export default function HomePage() {
     router.push('/macros');
   };
 
-  // ==================== RENDERIZADO ====================
+  // RENDERIZADO 
 
   return (
     <div style={{
@@ -44,7 +33,6 @@ export default function HomePage() {
       minHeight: '100vh',
       color: '#ffffff'
     }}>
-      {/* ========== HEADER CON NAVEGACIÓN ========== */}
       <header style={{
         backgroundColor: '#222222ff',
         padding: '15px 30px',
@@ -295,7 +283,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Columna derecha: Imagen de Metas */}
+          {/* Imagen de Metas */}
           <div style={{
             width: '100%',
             height: '400px',
@@ -329,7 +317,7 @@ export default function HomePage() {
           marginBottom: '60px',
           alignItems: 'center'
         }}>
-          {/* Columna izquierda: Imagen */}
+          {/* Imagen */}
           <div style={{
             width: '100%',
             height: '370px',
@@ -354,7 +342,7 @@ export default function HomePage() {
             }}></div>
           </div>
 
-          {/* Columna derecha: Icono y texto */}
+          {/* Icono y texto */}
           <div>
             <div 
               onClick={handleMacrosClick}
@@ -465,7 +453,7 @@ export default function HomePage() {
                 e.currentTarget.style.color = '#4a9eff';
               }}
             >
-              📧 Contacto: 13763596@murciaeduca.es
+              📧 Contacto: 13763596@alu.murciaeduca.es || 1913555@alu.murciaeudca.es
             </a>
             <a 
               style={{
